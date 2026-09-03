@@ -1,0 +1,82 @@
+{
+  "source_note": "Locally curated MITRE ATT&CK technique summaries (paraphrased) for offline RAG. Not the full ATT&CK corpus.",
+  "items": [
+    {
+      "document_id": "ATT-T1110",
+      "id": "T1110",
+      "title": "Brute Force",
+      "tactic": "Credential Access",
+      "summary": "Adversaries repeatedly guess credentials, producing many failed authentications often followed by a success. Detect via failed-auth bursts per user/source and improbable success timing.",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "attack-15"
+    },
+    {
+      "document_id": "ATT-T1021.004",
+      "id": "T1021.004",
+      "title": "Remote Services: SSH",
+      "tactic": "Lateral Movement",
+      "summary": "Adversaries use valid credentials over SSH to move between hosts. Evidence: successful SSH auth from a new source host followed by process execution on the target.",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "attack-15"
+    },
+    {
+      "document_id": "ATT-T1105",
+      "id": "T1105",
+      "title": "Ingress Tool Transfer",
+      "tactic": "Command and Control",
+      "summary": "Adversaries transfer tools or payloads from an external system into the environment, often via curl/wget. Evidence: shell process spawning a download of a payload.",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "attack-15"
+    },
+    {
+      "document_id": "ATT-T1059.004",
+      "id": "T1059.004",
+      "title": "Command and Scripting Interpreter: Unix Shell",
+      "tactic": "Execution",
+      "summary": "Execution of commands via bash/sh. Evidence: process activity with shell command lines invoking network or file operations.",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "attack-15"
+    },
+    {
+      "document_id": "ATT-T1078",
+      "id": "T1078",
+      "title": "Valid Accounts",
+      "tactic": "Defense Evasion",
+      "summary": "Use of legitimate credentials to blend in. Evidence: authorised identity acting outside normal windows or on unassigned assets.",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "attack-15"
+    },
+    {
+      "document_id": "ATT-T1548",
+      "id": "T1548",
+      "title": "Abuse Elevation Control Mechanism",
+      "tactic": "Privilege Escalation",
+      "summary": "Adversaries perform privileged actions (sudo, account creation). Evidence: privileged commands by a non-privileged or off-context identity.",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "attack-15"
+    },
+    {
+      "document_id": "ATT-T1005",
+      "id": "T1005",
+      "title": "Data from Local System",
+      "tactic": "Collection",
+      "summary": "Access to local data, including canary/decoy assets. Any interaction with a synthetic canary is high-signal in this cyber-range.",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "attack-15"
+    }
+  ]
+}

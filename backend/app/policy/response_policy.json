@@ -1,0 +1,51 @@
+{
+  "policy_version": "1.0",
+  "simulation_only": true,
+  "description": "Policy for SIMULATED response actions in the Rakshak-AI cyber-range. No action ever executes real shell, firewall or account changes.",
+  "risk_classes": {
+    "R0": "Read-only / evidentiary. No approval required.",
+    "R1": "Low-impact reversible containment (simulated). Approval recommended.",
+    "R2": "Endpoint containment (simulated). Approval required.",
+    "R3": "High-impact (simulated). Dual approval required. Not auto-executed."
+  },
+  "actions": {
+    "collect_mock_evidence": {
+      "risk_class": "R0",
+      "requires_approval": false,
+      "reversible": true,
+      "description": "Snapshot synthetic evidence bundle for the incident."
+    },
+    "create_case": {
+      "risk_class": "R0",
+      "requires_approval": false,
+      "reversible": true,
+      "description": "Open a synthetic case record."
+    },
+    "activate_decoy": {
+      "risk_class": "R1",
+      "requires_approval": false,
+      "reversible": true,
+      "description": "Deploy an isolated synthetic decoy/honeypot."
+    },
+    "simulate_revoke_session": {
+      "risk_class": "R1",
+      "requires_approval": true,
+      "reversible": true,
+      "description": "Simulate revocation of a user session token."
+    },
+    "simulate_isolate_endpoint": {
+      "risk_class": "R2",
+      "requires_approval": true,
+      "reversible": true,
+      "description": "Simulate network isolation of an endpoint."
+    }
+  },
+  "forbidden": [
+    "real shell execution",
+    "real firewall changes",
+    "real account modification",
+    "network scanning",
+    "credential attacks",
+    "data exfiltration"
+  ]
+}

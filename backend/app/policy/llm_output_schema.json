@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RakshakAnalysisResult",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "incident_id",
+    "assessment",
+    "threat_score",
+    "confidence",
+    "evidence_refs",
+    "attack_techniques",
+    "attack_path_summary",
+    "recommended_next_steps",
+    "missing_evidence",
+    "safety_notice"
+  ],
+  "properties": {
+    "incident_id": { "type": "string" },
+    "assessment": { "type": "string" },
+    "threat_score": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "attack_techniques": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "tactic", "confidence", "evidence_refs"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^T\\d{4}(\\.\\d{3})?$" },
+          "name": { "type": "string" },
+          "tactic": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "attack_path_summary": { "type": "string" },
+    "recommended_next_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "risk_class", "requires_approval"],
+        "properties": {
+          "action": { "type": "string" },
+          "risk_class": { "type": "string", "enum": ["R0", "R1", "R2", "R3"] },
+          "requires_approval": { "type": "boolean" }
+        }
+      }
+    },
+    "missing_evidence": { "type": "array", "items": { "type": "string" } },
+    "safety_notice": { "type": "string" },
+    "analysis_source": { "type": "string" }
+  }
+}

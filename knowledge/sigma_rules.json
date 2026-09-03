@@ -1,0 +1,57 @@
+{
+  "source_note": "Synthetic Sigma-style detection rules for the cyber-range (illustrative, not upstream SigmaHQ).",
+  "items": [
+    {
+      "document_id": "SIGMA-SSH-BRUTE",
+      "id": "ssh_bruteforce_success",
+      "title": "SSH brute force followed by success",
+      "logsource": "authentication",
+      "detection": "count(status_id=2) by user,src >= 3 followed by status_id=1 within 5m",
+      "level": "high",
+      "attack": "T1110, T1021.004",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    },
+    {
+      "document_id": "SIGMA-PAYLOAD",
+      "id": "shell_payload_download",
+      "title": "Shell process downloads payload",
+      "logsource": "process_activity",
+      "detection": "process.cmd_line contains any (curl, wget, http://, https://)",
+      "level": "high",
+      "attack": "T1105, T1059.004",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    },
+    {
+      "document_id": "SIGMA-CANARY",
+      "id": "canary_access",
+      "title": "Synthetic canary file access",
+      "logsource": "file_activity",
+      "detection": "unmapped.is_canary = true",
+      "level": "critical",
+      "attack": "T1005",
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    },
+    {
+      "document_id": "SIGMA-INSIDER",
+      "id": "insider_offhours",
+      "title": "Maintenance identity outside window / unassigned asset",
+      "logsource": "authentication",
+      "detection": "unmapped.outside_maintenance_window = true or unmapped.unassigned_asset = true",
+      "level": "high",
+      "attack": "T1078",
+      "classification": "restricted",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    }
+  ]
+}

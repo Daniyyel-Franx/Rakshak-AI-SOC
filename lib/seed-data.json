@@ -1,0 +1,2955 @@
+{
+"health": {
+"status": "ok",
+"ollama_available": false,
+"ollama_model": "qwen2.5:7b-instruct",
+"database": "ok",
+"ocsf_schema_version": "1.3.0",
+"faiss_available": false,
+"retrieval_mode": "keyword"
+},
+"scenarios": [
+{
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE",
+"name": "SSH Compromise",
+"description": "Failed SSH bursts, one success from a new device, process execution, synthetic payload retrieval.",
+"severity": "high",
+"ground_truth_nodes": 9,
+"ground_truth_edges": 8,
+"benign": false
+},
+{
+"scenario_id": "SCENARIO_2_INSIDER_MISUSE",
+"name": "Insider Misuse",
+"description": "Valid maintenance user acting outside window, restricted unassigned asset, privileged action, canary access.",
+"severity": "high",
+"ground_truth_nodes": 8,
+"ground_truth_edges": 7,
+"benign": false
+},
+{
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"name": "Coordinated Campaign",
+"description": "Low-severity findings across three sites sharing infrastructure and time window, correlated into one campaign.",
+"severity": "medium",
+"ground_truth_nodes": 9,
+"ground_truth_edges": 6,
+"benign": false
+},
+{
+"scenario_id": "SCENARIO_4_BENIGN_MAINTENANCE",
+"name": "Benign Maintenance",
+"description": "Valid user in an approved maintenance window performing normal access. Anomaly stays low.",
+"severity": "low",
+"ground_truth_nodes": 7,
+"ground_truth_edges": 6,
+"benign": true
+},
+{
+"scenario_id": "SCENARIO_5_DISCONNECTED_OPERATION",
+"name": "Disconnected Operation",
+"description": "Local generation and scoring during link loss; queued events replayed on restore without duplication.",
+"severity": "high",
+"ground_truth_nodes": 7,
+"ground_truth_edges": 7,
+"benign": false
+}
+],
+"telemetry": {
+"items": [
+{
+"event_id": "S4-FILE",
+"event_time": "2026-01-15T10:12:00+00:00",
+"received_time": "2026-08-19T02:50:16.798313+00:00",
+"site_id": "site-02",
+"event_class": "file_activity",
+"activity_id": 1,
+"type_uid": 100101,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {},
+"destination": {},
+"user": {
+"name": "maint-user",
+"type": "User"
+},
+"device": {
+"hostname": "scada-hist-01"
+},
+"process": {},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "medium",
+"user_role": "maintenance",
+"mission_state": "maintenance",
+"network_zone": "ot",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_4_BENIGN_MAINTENANCE",
+"authorized_activity": true,
+"maintenance_window": true,
+"is_canary": false
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "S4-PROC",
+"event_time": "2026-01-15T10:10:00+00:00",
+"received_time": "2026-08-19T02:50:16.797552+00:00",
+"site_id": "site-02",
+"event_class": "process_activity",
+"activity_id": 1,
+"type_uid": 100701,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {},
+"destination": {},
+"user": {
+"name": "maint-user",
+"type": "User"
+},
+"device": {
+"hostname": "scada-hist-01"
+},
+"process": {
+"name": "python3",
+"cmd_line": "python3 /opt/maint/healthcheck.py",
+"parent_process": {
+"name": "cron"
+}
+},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "medium",
+"user_role": "maintenance",
+"mission_state": "maintenance",
+"network_zone": "ot",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_4_BENIGN_MAINTENANCE",
+"authorized_activity": true,
+"maintenance_window": true
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "S4-AUTH",
+"event_time": "2026-01-15T10:05:00+00:00",
+"received_time": "2026-08-19T02:50:16.796541+00:00",
+"site_id": "site-02",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.20.0.5",
+"hostname": "maint-jump-01"
+},
+"destination": {
+"hostname": "scada-hist-01"
+},
+"user": {
+"name": "maint-user",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "medium",
+"user_role": "maintenance",
+"mission_state": "maintenance",
+"network_zone": "ot",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_4_BENIGN_MAINTENANCE",
+"authorized_activity": true,
+"maintenance_window": true
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "S3-site-03-AUTH-OK",
+"event_time": "2026-01-15T03:04:00+00:00",
+"received_time": "2026-08-19T02:50:16.786443+00:00",
+"site_id": "site-03",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 2,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "198.51.100.10",
+"hostname": "sync-relay"
+},
+"destination": {
+"hostname": "site-03-app-01"
+},
+"user": {
+"name": "svc-sync",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-03",
+"asset_criticality": "medium",
+"user_role": "service",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"campaign_feature": "198.51.100.10"
+},
+"classification": "unclassified",
+"priority": 2,
+"message": ""
+},
+{
+"event_id": "S3-site-03-AUTH-FAIL",
+"event_time": "2026-01-15T03:02:00+00:00",
+"received_time": "2026-08-19T02:50:16.785646+00:00",
+"site_id": "site-03",
+"event_class": "authentication",
+"activity_id": 2,
+"type_uid": 300202,
+"severity_id": 2,
+"status_id": 2,
+"action": "observed",
+"source": {
+"ip": "198.51.100.10",
+"hostname": "sync-relay"
+},
+"destination": {
+"hostname": "site-03-app-01"
+},
+"user": {
+"name": "svc-sync",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-03",
+"asset_criticality": "medium",
+"user_role": "service",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"campaign_feature": "198.51.100.10"
+},
+"classification": "unclassified",
+"priority": 2,
+"message": ""
+},
+{
+"event_id": "S3-site-02-AUTH-OK",
+"event_time": "2026-01-15T03:03:00+00:00",
+"received_time": "2026-08-19T02:50:16.784920+00:00",
+"site_id": "site-02",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 2,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "198.51.100.10",
+"hostname": "sync-relay"
+},
+"destination": {
+"hostname": "site-02-app-01"
+},
+"user": {
+"name": "svc-sync",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "medium",
+"user_role": "service",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"campaign_feature": "198.51.100.10"
+},
+"classification": "unclassified",
+"priority": 2,
+"message": ""
+},
+{
+"event_id": "S3-site-02-AUTH-FAIL",
+"event_time": "2026-01-15T03:01:00+00:00",
+"received_time": "2026-08-19T02:50:16.784149+00:00",
+"site_id": "site-02",
+"event_class": "authentication",
+"activity_id": 2,
+"type_uid": 300202,
+"severity_id": 2,
+"status_id": 2,
+"action": "observed",
+"source": {
+"ip": "198.51.100.10",
+"hostname": "sync-relay"
+},
+"destination": {
+"hostname": "site-02-app-01"
+},
+"user": {
+"name": "svc-sync",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "medium",
+"user_role": "service",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"campaign_feature": "198.51.100.10"
+},
+"classification": "unclassified",
+"priority": 2,
+"message": ""
+},
+{
+"event_id": "S3-site-01-AUTH-OK",
+"event_time": "2026-01-15T03:02:00+00:00",
+"received_time": "2026-08-19T02:50:16.783297+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 2,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "198.51.100.10",
+"hostname": "sync-relay"
+},
+"destination": {
+"hostname": "site-01-app-01"
+},
+"user": {
+"name": "svc-sync",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "medium",
+"user_role": "service",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"campaign_feature": "198.51.100.10"
+},
+"classification": "unclassified",
+"priority": 2,
+"message": ""
+},
+{
+"event_id": "S3-site-01-AUTH-FAIL",
+"event_time": "2026-01-15T03:00:00+00:00",
+"received_time": "2026-08-19T02:50:16.782253+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 2,
+"type_uid": 300202,
+"severity_id": 2,
+"status_id": 2,
+"action": "observed",
+"source": {
+"ip": "198.51.100.10",
+"hostname": "sync-relay"
+},
+"destination": {
+"hostname": "site-01-app-01"
+},
+"user": {
+"name": "svc-sync",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "medium",
+"user_role": "service",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"campaign_feature": "198.51.100.10"
+},
+"classification": "unclassified",
+"priority": 2,
+"message": ""
+},
+{
+"event_id": "S2-CANARY",
+"event_time": "2026-01-15T02:20:00+00:00",
+"received_time": "2026-08-19T02:50:16.769090+00:00",
+"site_id": "site-02",
+"event_class": "file_activity",
+"activity_id": 1,
+"type_uid": 100101,
+"severity_id": 5,
+"status_id": 1,
+"action": "observed",
+"source": {},
+"destination": {},
+"user": {
+"name": "maint-user",
+"type": "User"
+},
+"device": {
+"hostname": "scada-hist-01"
+},
+"process": {},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "critical",
+"user_role": "maintenance",
+"mission_state": "operation",
+"network_zone": "ot",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_2_INSIDER_MISUSE",
+"is_canary": true
+},
+"classification": "unclassified",
+"priority": 5,
+"message": ""
+},
+{
+"event_id": "S2-PRIV",
+"event_time": "2026-01-15T02:18:00+00:00",
+"received_time": "2026-08-19T02:50:16.768212+00:00",
+"site_id": "site-02",
+"event_class": "process_activity",
+"activity_id": 1,
+"type_uid": 100701,
+"severity_id": 4,
+"status_id": 1,
+"action": "observed",
+"source": {},
+"destination": {},
+"user": {
+"name": "maint-user",
+"type": "User"
+},
+"device": {
+"hostname": "scada-hist-01"
+},
+"process": {
+"name": "sudo",
+"cmd_line": "sudo systemctl stop historian",
+"parent_process": {
+"name": "bash"
+}
+},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "critical",
+"user_role": "maintenance",
+"mission_state": "operation",
+"network_zone": "ot",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_2_INSIDER_MISUSE",
+"outside_maintenance_window": true
+},
+"classification": "unclassified",
+"priority": 4,
+"message": ""
+},
+{
+"event_id": "S2-FILE-RESTRICTED",
+"event_time": "2026-01-15T02:16:00+00:00",
+"received_time": "2026-08-19T02:50:16.767380+00:00",
+"site_id": "site-02",
+"event_class": "file_activity",
+"activity_id": 1,
+"type_uid": 100101,
+"severity_id": 3,
+"status_id": 1,
+"action": "observed",
+"source": {},
+"destination": {},
+"user": {
+"name": "maint-user",
+"type": "User"
+},
+"device": {
+"hostname": "scada-hist-01"
+},
+"process": {},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "critical",
+"user_role": "maintenance",
+"mission_state": "operation",
+"network_zone": "ot",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_2_INSIDER_MISUSE",
+"unassigned_asset": true,
+"is_canary": false
+},
+"classification": "unclassified",
+"priority": 3,
+"message": ""
+},
+{
+"event_id": "S2-AUTH",
+"event_time": "2026-01-15T02:14:00+00:00",
+"received_time": "2026-08-19T02:50:16.766201+00:00",
+"site_id": "site-02",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 3,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.20.0.9",
+"hostname": "maint-laptop"
+},
+"destination": {
+"hostname": "scada-hist-01"
+},
+"user": {
+"name": "maint-user",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-02",
+"asset_criticality": "critical",
+"user_role": "maintenance",
+"mission_state": "operation",
+"network_zone": "ot",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_2_INSIDER_MISUSE",
+"outside_maintenance_window": true
+},
+"classification": "unclassified",
+"priority": 3,
+"message": ""
+},
+{
+"event_id": "S1-NET",
+"event_time": "2026-01-15T02:00:32+00:00",
+"received_time": "2026-08-19T02:50:16.743027+00:00",
+"site_id": "site-01",
+"event_class": "network_activity",
+"activity_id": 6,
+"type_uid": 400106,
+"severity_id": 4,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.10.1.20"
+},
+"destination": {
+"ip": "127.0.0.1",
+"port": 9
+},
+"user": {},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "high",
+"user_role": "operator",
+"mission_state": "elevated",
+"network_zone": "dmz",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE"
+},
+"classification": "unclassified",
+"priority": 4,
+"message": ""
+},
+{
+"event_id": "S1-PROC",
+"event_time": "2026-01-15T02:00:30+00:00",
+"received_time": "2026-08-19T02:50:16.742234+00:00",
+"site_id": "site-01",
+"event_class": "process_activity",
+"activity_id": 1,
+"type_uid": 100701,
+"severity_id": 4,
+"status_id": 1,
+"action": "observed",
+"source": {},
+"destination": {},
+"user": {
+"name": "sysops",
+"type": "User"
+},
+"device": {
+"hostname": "target-web-01"
+},
+"process": {
+"name": "bash",
+"cmd_line": "bash -c 'curl -s http://127.0.0.1:9/mock/payload.enc -o /tmp/p.enc'",
+"parent_process": {
+"name": "sshd"
+}
+},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "high",
+"user_role": "operator",
+"mission_state": "elevated",
+"network_zone": "dmz",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE"
+},
+"classification": "unclassified",
+"priority": 4,
+"message": ""
+},
+{
+"event_id": "S1-AUTH-OK",
+"event_time": "2026-01-15T02:00:20+00:00",
+"received_time": "2026-08-19T02:50:16.741398+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 4,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "203.0.113.45",
+"hostname": "attacker-vm"
+},
+"destination": {
+"hostname": "target-web-01"
+},
+"user": {
+"name": "sysops",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "high",
+"user_role": "operator",
+"mission_state": "elevated",
+"network_zone": "dmz",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE"
+},
+"classification": "unclassified",
+"priority": 4,
+"message": ""
+},
+{
+"event_id": "S1-AUTH-FAIL-3",
+"event_time": "2026-01-15T02:00:10+00:00",
+"received_time": "2026-08-19T02:50:16.740592+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 2,
+"type_uid": 300202,
+"severity_id": 3,
+"status_id": 2,
+"action": "observed",
+"source": {
+"ip": "203.0.113.45",
+"hostname": "attacker-vm"
+},
+"destination": {
+"hostname": "target-web-01"
+},
+"user": {
+"name": "sysops",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "high",
+"user_role": "operator",
+"mission_state": "elevated",
+"network_zone": "dmz",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE"
+},
+"classification": "unclassified",
+"priority": 3,
+"message": ""
+},
+{
+"event_id": "S1-AUTH-FAIL-2",
+"event_time": "2026-01-15T02:00:05+00:00",
+"received_time": "2026-08-19T02:50:16.739649+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 2,
+"type_uid": 300202,
+"severity_id": 3,
+"status_id": 2,
+"action": "observed",
+"source": {
+"ip": "203.0.113.45",
+"hostname": "attacker-vm"
+},
+"destination": {
+"hostname": "target-web-01"
+},
+"user": {
+"name": "sysops",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "high",
+"user_role": "operator",
+"mission_state": "elevated",
+"network_zone": "dmz",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE"
+},
+"classification": "unclassified",
+"priority": 3,
+"message": ""
+},
+{
+"event_id": "S1-AUTH-FAIL-1",
+"event_time": "2026-01-15T02:00:00+00:00",
+"received_time": "2026-08-19T02:50:16.736340+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 2,
+"type_uid": 300202,
+"severity_id": 3,
+"status_id": 2,
+"action": "observed",
+"source": {
+"ip": "203.0.113.45",
+"hostname": "attacker-vm"
+},
+"destination": {
+"hostname": "target-web-01"
+},
+"user": {
+"name": "sysops",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "high",
+"user_role": "operator",
+"mission_state": "elevated",
+"network_zone": "dmz",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE"
+},
+"classification": "unclassified",
+"priority": 3,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-8",
+"event_time": "2026-01-15T09:24:00+00:00",
+"received_time": "2026-08-19T02:50:15.835142+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.28",
+"hostname": "eng-ws-03"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "carol",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-7",
+"event_time": "2026-01-15T09:21:00+00:00",
+"received_time": "2026-08-19T02:50:15.835015+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.27",
+"hostname": "eng-ws-02"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "bob",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-NET-6",
+"event_time": "2026-01-15T09:18:00+00:00",
+"received_time": "2026-08-19T02:50:15.834881+00:00",
+"site_id": "site-01",
+"event_class": "network_activity",
+"activity_id": 6,
+"type_uid": 400106,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.26"
+},
+"destination": {
+"ip": "10.0.1.10",
+"port": 443
+},
+"user": {},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "medium",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-6",
+"event_time": "2026-01-15T09:18:00+00:00",
+"received_time": "2026-08-19T02:50:15.834741+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.26",
+"hostname": "admin-ws-01"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "alice",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-5",
+"event_time": "2026-01-15T09:15:00+00:00",
+"received_time": "2026-08-19T02:50:15.834595+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.25",
+"hostname": "eng-ws-03"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "carol",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-4",
+"event_time": "2026-01-15T09:12:00+00:00",
+"received_time": "2026-08-19T02:50:15.834458+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.24",
+"hostname": "eng-ws-02"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "bob",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-NET-3",
+"event_time": "2026-01-15T09:09:00+00:00",
+"received_time": "2026-08-19T02:50:15.834315+00:00",
+"site_id": "site-01",
+"event_class": "network_activity",
+"activity_id": 6,
+"type_uid": 400106,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.23"
+},
+"destination": {
+"ip": "10.0.1.10",
+"port": 443
+},
+"user": {},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "medium",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-3",
+"event_time": "2026-01-15T09:09:00+00:00",
+"received_time": "2026-08-19T02:50:15.834170+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.23",
+"hostname": "admin-ws-01"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "alice",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-2",
+"event_time": "2026-01-15T09:06:00+00:00",
+"received_time": "2026-08-19T02:50:15.834025+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.22",
+"hostname": "eng-ws-03"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "carol",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-1",
+"event_time": "2026-01-15T09:03:00+00:00",
+"received_time": "2026-08-19T02:50:15.833871+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.21",
+"hostname": "eng-ws-02"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "bob",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-NET-0",
+"event_time": "2026-01-15T09:00:00+00:00",
+"received_time": "2026-08-19T02:50:15.833630+00:00",
+"site_id": "site-01",
+"event_class": "network_activity",
+"activity_id": 6,
+"type_uid": 400106,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.20"
+},
+"destination": {
+"ip": "10.0.1.10",
+"port": 443
+},
+"user": {},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "medium",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+},
+{
+"event_id": "BG-AUTH-0",
+"event_time": "2026-01-15T09:00:00+00:00",
+"received_time": "2026-08-19T02:50:15.826407+00:00",
+"site_id": "site-01",
+"event_class": "authentication",
+"activity_id": 1,
+"type_uid": 300201,
+"severity_id": 1,
+"status_id": 1,
+"action": "observed",
+"source": {
+"ip": "10.0.0.20",
+"hostname": "admin-ws-01"
+},
+"destination": {
+"hostname": "corp-app-01"
+},
+"user": {
+"name": "alice",
+"type": "User"
+},
+"device": {},
+"process": {},
+"unmapped": {
+"site_id": "site-01",
+"asset_criticality": "low",
+"user_role": "user",
+"mission_state": "steady",
+"network_zone": "corp",
+"clock_uncertainty_ms": 25,
+"sensor_confidence": 0.9,
+"classification": "unclassified",
+"scenario_id": ""
+},
+"classification": "unclassified",
+"priority": 1,
+"message": ""
+}
+],
+"next_cursor": null,
+"total": 31
+},
+"incidents": [
+{
+"incident_id": "INC-5948EB4ED8",
+"title": "Interaction with synthetic canary/decoy asset",
+"status": "open",
+"risk_score": 85.0,
+"confidence": 0.99,
+"mission_impact": "high",
+"scenario_id": "SCENARIO_2_INSIDER_MISUSE",
+"finding_count": 3,
+"created_at": "2026-08-19T02:50:16.774275+00:00"
+},
+{
+"incident_id": "INC-8AFB80C17C",
+"title": "SSH brute-force followed by successful authentication",
+"status": "open",
+"risk_score": 70.0,
+"confidence": 0.8,
+"mission_impact": "high",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE",
+"finding_count": 2,
+"created_at": "2026-08-19T02:50:16.751631+00:00"
+},
+{
+"incident_id": "INC-CAMPAIGN-1985110010",
+"title": "Coordinated campaign across 3 sites (shared 198.51.100.10)",
+"status": "open",
+"risk_score": 62.0,
+"confidence": 0.7,
+"mission_impact": "medium",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"finding_count": 0,
+"created_at": "2026-08-19T02:50:16.788579+00:00"
+}
+],
+"metrics": {
+"total_events": 31,
+"active_incidents": 3,
+"critical_incidents": 2,
+"average_risk": 72.3,
+"events_per_minute": 1.41,
+"queued_offline_events": 0,
+"severity_counts": {
+"info": 15,
+"medium": 5,
+"high": 4,
+"critical": 1,
+"low": 6
+},
+"events_by_class": {
+"authentication": 21,
+"network_activity": 4,
+"process_activity": 3,
+"file_activity": 3
+},
+"techniques": {
+"T1110": 1,
+"T1021.004": 1,
+"T1105": 1,
+"T1059.004": 1,
+"T1005": 1,
+"T1078": 1,
+"T1530": 1,
+"T1548": 1
+},
+"risk_distribution": [
+{
+"bucket": "0-10",
+"count": 0
+},
+{
+"bucket": "10-20",
+"count": 0
+},
+{
+"bucket": "20-30",
+"count": 0
+},
+{
+"bucket": "30-40",
+"count": 0
+},
+{
+"bucket": "40-50",
+"count": 0
+},
+{
+"bucket": "50-60",
+"count": 0
+},
+{
+"bucket": "60-70",
+"count": 1
+},
+{
+"bucket": "70-80",
+"count": 1
+},
+{
+"bucket": "80-90",
+"count": 1
+},
+{
+"bucket": "90-100",
+"count": 0
+}
+],
+"event_rate_timeseries": [
+{
+"minute": "2026-01-15T02:00",
+"count": 6
+},
+{
+"minute": "2026-01-15T02:14",
+"count": 1
+},
+{
+"minute": "2026-01-15T02:16",
+"count": 1
+},
+{
+"minute": "2026-01-15T02:18",
+"count": 1
+},
+{
+"minute": "2026-01-15T02:20",
+"count": 1
+},
+{
+"minute": "2026-01-15T03:00",
+"count": 1
+},
+{
+"minute": "2026-01-15T03:01",
+"count": 1
+},
+{
+"minute": "2026-01-15T03:02",
+"count": 2
+},
+{
+"minute": "2026-01-15T03:03",
+"count": 1
+},
+{
+"minute": "2026-01-15T03:04",
+"count": 1
+},
+{
+"minute": "2026-01-15T09:00",
+"count": 2
+},
+{
+"minute": "2026-01-15T09:03",
+"count": 1
+},
+{
+"minute": "2026-01-15T09:06",
+"count": 1
+},
+{
+"minute": "2026-01-15T09:09",
+"count": 2
+},
+{
+"minute": "2026-01-15T09:12",
+"count": 1
+},
+{
+"minute": "2026-01-15T09:15",
+"count": 1
+},
+{
+"minute": "2026-01-15T09:18",
+"count": 2
+},
+{
+"minute": "2026-01-15T09:21",
+"count": 1
+},
+{
+"minute": "2026-01-15T09:24",
+"count": 1
+},
+{
+"minute": "2026-01-15T10:05",
+"count": 1
+},
+{
+"minute": "2026-01-15T10:10",
+"count": 1
+},
+{
+"minute": "2026-01-15T10:12",
+"count": 1
+}
+],
+"top_entities": [
+{
+"entity": "user:maint-user",
+"risk": 18.0
+},
+{
+"entity": "user:sysops",
+"risk": 17.0
+},
+{
+"entity": "ip:203.0.113.45",
+"risk": 13.0
+},
+{
+"entity": "user:svc-sync",
+"risk": 12.0
+},
+{
+"entity": "ip:198.51.100.10",
+"risk": 12.0
+},
+{
+"entity": "ip:10.10.1.20",
+"risk": 4.0
+},
+{
+"entity": "user:alice",
+"risk": 3.0
+},
+{
+"entity": "user:bob",
+"risk": 3.0
+}
+],
+"incident_status": {
+"open": 3
+},
+"cross_site_campaigns": [
+{
+"incident_id": "INC-CAMPAIGN-1985110010",
+"title": "Coordinated campaign across 3 sites (shared 198.51.100.10)",
+"risk_score": 62.0,
+"sites": [
+"site-01",
+"site-02",
+"site-03"
+]
+}
+]
+},
+"details": {
+"INC-5948EB4ED8": {
+"incident_id": "INC-5948EB4ED8",
+"title": "Interaction with synthetic canary/decoy asset",
+"status": "open",
+"risk_score": 85.0,
+"confidence": 0.99,
+"mission_impact": "high",
+"scenario_id": "SCENARIO_2_INSIDER_MISUSE",
+"finding_count": 3,
+"created_at": "2026-08-19T02:50:16.774275+00:00",
+"entity_ids": [
+"attacker_ip:10.20.0.9",
+"decoy:/canary/DO_NOT_OPEN.xlsx",
+"file:/restricted/plantA/config.bin",
+"process:scada-hist-01:sudo",
+"site:site-02",
+"source_host:maint-laptop",
+"target_host:scada-hist-01",
+"user:maint-user"
+],
+"finding_ids": [
+"FND-C09748717B",
+"FND-8C2F3C26F8",
+"FND-A43537F870"
+],
+"timeline": [
+{
+"event_id": "S2-AUTH",
+"time": "2026-01-15T02:14:00+00:00",
+"event_class": "authentication",
+"message": "Successful ssh auth for maint-user",
+"severity_id": 3
+},
+{
+"event_id": "S2-FILE-RESTRICTED",
+"time": "2026-01-15T02:16:00+00:00",
+"event_class": "file_activity",
+"message": "File access /restricted/plantA/config.bin by maint-user",
+"severity_id": 3
+},
+{
+"event_id": "S2-PRIV",
+"time": "2026-01-15T02:18:00+00:00",
+"event_class": "process_activity",
+"message": "Process sudo launched on scada-hist-01",
+"severity_id": 4
+},
+{
+"event_id": "S2-CANARY",
+"time": "2026-01-15T02:20:00+00:00",
+"event_class": "file_activity",
+"message": "File access /canary/DO_NOT_OPEN.xlsx by maint-user",
+"severity_id": 5
+}
+],
+"evidence_refs": [
+"S2-AUTH",
+"S2-CANARY",
+"S2-FILE-RESTRICTED",
+"S2-PRIV"
+],
+"recommended_actions": [
+{
+"action": "activate_decoy",
+"risk_class": "R1",
+"requires_approval": false
+},
+{
+"action": "collect_mock_evidence",
+"risk_class": "R0",
+"requires_approval": false
+},
+{
+"action": "create_case",
+"risk_class": "R0",
+"requires_approval": false
+}
+],
+"graph": {
+"incident_id": "INC-5948EB4ED8",
+"nodes": [
+{
+"id": "site:site-02",
+"type": "site",
+"data": {
+"label": "Site site-02",
+"entity_type": "site",
+"severity": "low",
+"evidence_event_ids": []
+},
+"position": {
+"x": 0.0,
+"y": 0.0
+}
+},
+{
+"id": "attacker_ip:10.20.0.9",
+"type": "attacker_ip",
+"data": {
+"label": "10.20.0.9",
+"entity_type": "attacker_ip",
+"severity": "medium",
+"evidence_event_ids": [
+"S2-AUTH"
+]
+},
+"position": {
+"x": 220.0,
+"y": 0.0
+}
+},
+{
+"id": "user:maint-user",
+"type": "user",
+"data": {
+"label": "maint-user",
+"entity_type": "user",
+"severity": "critical",
+"evidence_event_ids": [
+"S2-AUTH",
+"S2-FILE-RESTRICTED",
+"S2-PRIV",
+"S2-CANARY"
+]
+},
+"position": {
+"x": 440.0,
+"y": 0.0
+}
+},
+{
+"id": "source_host:maint-laptop",
+"type": "source_host",
+"data": {
+"label": "maint-laptop",
+"entity_type": "source_host",
+"severity": "medium",
+"evidence_event_ids": [
+"S2-AUTH"
+]
+},
+"position": {
+"x": 660.0,
+"y": 0.0
+}
+},
+{
+"id": "target_host:scada-hist-01",
+"type": "target_host",
+"data": {
+"label": "scada-hist-01",
+"entity_type": "target_host",
+"severity": "high",
+"evidence_event_ids": [
+"S2-AUTH",
+"S2-PRIV"
+]
+},
+"position": {
+"x": 880.0,
+"y": 0.0
+}
+},
+{
+"id": "file:/restricted/plantA/config.bin",
+"type": "file",
+"data": {
+"label": "config.bin",
+"entity_type": "file",
+"severity": "medium",
+"evidence_event_ids": [
+"S2-FILE-RESTRICTED"
+]
+},
+"position": {
+"x": 1320.0,
+"y": 0.0
+}
+},
+{
+"id": "process:scada-hist-01:sudo",
+"type": "process",
+"data": {
+"label": "sudo",
+"entity_type": "process",
+"severity": "high",
+"evidence_event_ids": [
+"S2-PRIV"
+],
+"cmd_line": "sudo systemctl stop historian"
+},
+"position": {
+"x": 1100.0,
+"y": 0.0
+}
+},
+{
+"id": "decoy:/canary/DO_NOT_OPEN.xlsx",
+"type": "decoy",
+"data": {
+"label": "canary: DO_NOT_OPEN.xlsx",
+"entity_type": "decoy",
+"severity": "critical",
+"evidence_event_ids": [
+"S2-CANARY"
+],
+"synthetic": true
+},
+"position": {
+"x": 1320.0,
+"y": 120.0
+}
+},
+{
+"id": "incident:INC-5948EB4ED8",
+"type": "incident",
+"data": {
+"label": "INC-5948EB4ED8",
+"entity_type": "incident",
+"severity": "critical",
+"evidence_event_ids": []
+},
+"position": {
+"x": 1540.0,
+"y": 0.0
+}
+}
+],
+"edges": [
+{
+"id": "e:ip_user:10.20.0.9:maint-user",
+"source": "attacker_ip:10.20.0.9",
+"target": "user:maint-user",
+"label": "authenticates as",
+"timestamp": "2026-01-15T02:14:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S2-AUTH"
+],
+"severity": "medium",
+"animated": false
+},
+{
+"id": "e:user_shost:maint-user:maint-laptop",
+"source": "user:maint-user",
+"target": "source_host:maint-laptop",
+"label": "from host",
+"timestamp": "2026-01-15T02:14:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S2-AUTH"
+],
+"severity": "medium",
+"animated": false
+},
+{
+"id": "e:shost_thost:maint-laptop:scada-hist-01",
+"source": "source_host:maint-laptop",
+"target": "target_host:scada-hist-01",
+"label": "SSH login",
+"timestamp": "2026-01-15T02:14:00+00:00",
+"technique_id": "T1021.004",
+"technique_name": "Remote Services: SSH",
+"evidence_event_ids": [
+"S2-AUTH"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:user_file:maint-user:/restricted/plantA/config.bin",
+"source": "user:maint-user",
+"target": "file:/restricted/plantA/config.bin",
+"label": "accessed",
+"timestamp": "2026-01-15T02:16:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S2-FILE-RESTRICTED"
+],
+"severity": "medium",
+"animated": false
+},
+{
+"id": "e:host_proc:scada-hist-01:sudo",
+"source": "target_host:scada-hist-01",
+"target": "process:scada-hist-01:sudo",
+"label": "executes",
+"timestamp": "2026-01-15T02:18:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S2-PRIV"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:user_proc:maint-user:sudo",
+"source": "user:maint-user",
+"target": "process:scada-hist-01:sudo",
+"label": "spawned by",
+"timestamp": "2026-01-15T02:18:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S2-PRIV"
+],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:user_decoy:maint-user:/canary/DO_NOT_OPEN.xlsx",
+"source": "user:maint-user",
+"target": "decoy:/canary/DO_NOT_OPEN.xlsx",
+"label": "touched canary",
+"timestamp": "2026-01-15T02:20:00+00:00",
+"technique_id": "T1005",
+"technique_name": "Data from Local System",
+"evidence_event_ids": [
+"S2-CANARY"
+],
+"severity": "critical",
+"animated": true
+},
+{
+"id": "e:inc:INC-5948EB4ED8:user:maint-user",
+"source": "incident:INC-5948EB4ED8",
+"target": "user:maint-user",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-5948EB4ED8:target_host:scada-hist-01",
+"source": "incident:INC-5948EB4ED8",
+"target": "target_host:scada-hist-01",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-5948EB4ED8:process:scada-hist-01:sudo",
+"source": "incident:INC-5948EB4ED8",
+"target": "process:scada-hist-01:sudo",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-5948EB4ED8:decoy:/canary/DO_NOT_OPEN.xlsx",
+"source": "incident:INC-5948EB4ED8",
+"target": "decoy:/canary/DO_NOT_OPEN.xlsx",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+}
+]
+},
+"analysis": {
+"incident_id": "INC-5948EB4ED8",
+"assessment": "Deterministic rule-engine assessment for INC-5948EB4ED8: Interaction with synthetic canary/decoy asset. 3 finding(s) correlated across 8 entities. Evidence supports suspicion; treat as under investigation, not confirmed.",
+"threat_score": 85,
+"confidence": 0.99,
+"evidence_refs": [
+"S2-AUTH",
+"S2-CANARY",
+"S2-FILE-RESTRICTED",
+"S2-PRIV"
+],
+"attack_techniques": [
+{
+"id": "T1078",
+"name": "Valid Accounts",
+"tactic": "Defense Evasion",
+"confidence": 0.8,
+"evidence_refs": [
+"S2-AUTH",
+"S2-FILE-RESTRICTED",
+"S2-PRIV"
+]
+},
+{
+"id": "T1530",
+"name": "Data from Cloud/Restricted Asset",
+"tactic": "Collection",
+"confidence": 0.8,
+"evidence_refs": [
+"S2-AUTH",
+"S2-FILE-RESTRICTED",
+"S2-PRIV"
+]
+},
+{
+"id": "T1548",
+"name": "Abuse Elevation Control Mechanism",
+"tactic": "Privilege Escalation",
+"confidence": 0.6,
+"evidence_refs": [
+"S2-PRIV"
+]
+},
+{
+"id": "T1005",
+"name": "Data from Local System",
+"tactic": "Collection",
+"confidence": 0.6,
+"evidence_refs": [
+"S2-CANARY"
+]
+}
+],
+"attack_path_summary": "Interaction with synthetic canary/decoy asset",
+"recommended_next_steps": [
+{
+"action": "activate_decoy",
+"risk_class": "R1",
+"requires_approval": false
+},
+{
+"action": "collect_mock_evidence",
+"risk_class": "R0",
+"requires_approval": false
+},
+{
+"action": "create_case",
+"risk_class": "R0",
+"requires_approval": false
+}
+],
+"missing_evidence": [
+"Endpoint EDR process tree corroboration",
+"Network capture of synthetic payload transfer"
+],
+"safety_notice": "SIMULATION ONLY \u2014 synthetic cyber-range. No real actions performed.",
+"analysis_source": "rule_engine_fallback"
+}
+},
+"INC-8AFB80C17C": {
+"incident_id": "INC-8AFB80C17C",
+"title": "SSH brute-force followed by successful authentication",
+"status": "open",
+"risk_score": 70.0,
+"confidence": 0.8,
+"mission_impact": "high",
+"scenario_id": "SCENARIO_1_SSH_COMPROMISE",
+"finding_count": 2,
+"created_at": "2026-08-19T02:50:16.751631+00:00",
+"entity_ids": [
+"attacker_ip:10.10.1.20",
+"attacker_ip:203.0.113.45",
+"payload:bash:S1-PROC",
+"process:target-web-01:bash",
+"site:site-01",
+"source_host:attacker-vm",
+"target_host:127.0.0.1",
+"target_host:target-web-01",
+"user:sysops"
+],
+"finding_ids": [
+"FND-808C046627",
+"FND-7452DAD2A7"
+],
+"timeline": [
+{
+"event_id": "S1-AUTH-FAIL-1",
+"time": "2026-01-15T02:00:00+00:00",
+"event_class": "authentication",
+"message": "Failed ssh auth for sysops",
+"severity_id": 3
+},
+{
+"event_id": "S1-AUTH-FAIL-2",
+"time": "2026-01-15T02:00:05+00:00",
+"event_class": "authentication",
+"message": "Failed ssh auth for sysops",
+"severity_id": 3
+},
+{
+"event_id": "S1-AUTH-FAIL-3",
+"time": "2026-01-15T02:00:10+00:00",
+"event_class": "authentication",
+"message": "Failed ssh auth for sysops",
+"severity_id": 3
+},
+{
+"event_id": "S1-AUTH-OK",
+"time": "2026-01-15T02:00:20+00:00",
+"event_class": "authentication",
+"message": "Successful ssh auth for sysops",
+"severity_id": 4
+},
+{
+"event_id": "S1-PROC",
+"time": "2026-01-15T02:00:30+00:00",
+"event_class": "process_activity",
+"message": "Process bash launched on target-web-01",
+"severity_id": 4
+},
+{
+"event_id": "S1-NET",
+"time": "2026-01-15T02:00:32+00:00",
+"event_class": "network_activity",
+"message": "Network flow 10.10.1.20 -> 127.0.0.1:9",
+"severity_id": 4
+}
+],
+"evidence_refs": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK",
+"S1-PROC"
+],
+"recommended_actions": [
+{
+"action": "simulate_isolate_endpoint",
+"risk_class": "R2",
+"requires_approval": true
+},
+{
+"action": "simulate_revoke_session",
+"risk_class": "R1",
+"requires_approval": true
+},
+{
+"action": "collect_mock_evidence",
+"risk_class": "R0",
+"requires_approval": false
+},
+{
+"action": "create_case",
+"risk_class": "R0",
+"requires_approval": false
+}
+],
+"graph": {
+"incident_id": "INC-8AFB80C17C",
+"nodes": [
+{
+"id": "site:site-01",
+"type": "site",
+"data": {
+"label": "Site site-01",
+"entity_type": "site",
+"severity": "low",
+"evidence_event_ids": []
+},
+"position": {
+"x": 0.0,
+"y": 0.0
+}
+},
+{
+"id": "attacker_ip:203.0.113.45",
+"type": "attacker_ip",
+"data": {
+"label": "203.0.113.45",
+"entity_type": "attacker_ip",
+"severity": "high",
+"evidence_event_ids": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK"
+]
+},
+"position": {
+"x": 220.0,
+"y": 0.0
+}
+},
+{
+"id": "user:sysops",
+"type": "user",
+"data": {
+"label": "sysops",
+"entity_type": "user",
+"severity": "high",
+"evidence_event_ids": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK",
+"S1-PROC"
+]
+},
+"position": {
+"x": 440.0,
+"y": 0.0
+}
+},
+{
+"id": "source_host:attacker-vm",
+"type": "source_host",
+"data": {
+"label": "attacker-vm",
+"entity_type": "source_host",
+"severity": "high",
+"evidence_event_ids": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK"
+]
+},
+"position": {
+"x": 660.0,
+"y": 0.0
+}
+},
+{
+"id": "target_host:target-web-01",
+"type": "target_host",
+"data": {
+"label": "target-web-01",
+"entity_type": "target_host",
+"severity": "high",
+"evidence_event_ids": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK",
+"S1-PROC"
+]
+},
+"position": {
+"x": 880.0,
+"y": 0.0
+}
+},
+{
+"id": "process:target-web-01:bash",
+"type": "process",
+"data": {
+"label": "bash",
+"entity_type": "process",
+"severity": "high",
+"evidence_event_ids": [
+"S1-PROC"
+],
+"cmd_line": "bash -c 'curl -s http://127.0.0.1:9/mock/payload.enc -o /tmp/p.enc'"
+},
+"position": {
+"x": 1100.0,
+"y": 0.0
+}
+},
+{
+"id": "payload:bash:S1-PROC",
+"type": "payload",
+"data": {
+"label": "synthetic payload",
+"entity_type": "payload",
+"severity": "high",
+"evidence_event_ids": [
+"S1-PROC"
+],
+"synthetic": true
+},
+"position": {
+"x": 1320.0,
+"y": 0.0
+}
+},
+{
+"id": "attacker_ip:10.10.1.20",
+"type": "attacker_ip",
+"data": {
+"label": "10.10.1.20",
+"entity_type": "attacker_ip",
+"severity": "high",
+"evidence_event_ids": [
+"S1-NET"
+]
+},
+"position": {
+"x": 220.0,
+"y": 120.0
+}
+},
+{
+"id": "target_host:127.0.0.1",
+"type": "target_host",
+"data": {
+"label": "127.0.0.1",
+"entity_type": "target_host",
+"severity": "high",
+"evidence_event_ids": [
+"S1-NET"
+]
+},
+"position": {
+"x": 880.0,
+"y": 120.0
+}
+},
+{
+"id": "incident:INC-8AFB80C17C",
+"type": "incident",
+"data": {
+"label": "INC-8AFB80C17C",
+"entity_type": "incident",
+"severity": "critical",
+"evidence_event_ids": []
+},
+"position": {
+"x": 1540.0,
+"y": 0.0
+}
+}
+],
+"edges": [
+{
+"id": "e:ip_user:203.0.113.45:sysops",
+"source": "attacker_ip:203.0.113.45",
+"target": "user:sysops",
+"label": "authenticates as",
+"timestamp": "2026-01-15T02:00:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK"
+],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:user_shost:sysops:attacker-vm",
+"source": "user:sysops",
+"target": "source_host:attacker-vm",
+"label": "from host",
+"timestamp": "2026-01-15T02:00:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK"
+],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:shost_thost:attacker-vm:target-web-01",
+"source": "source_host:attacker-vm",
+"target": "target_host:target-web-01",
+"label": "SSH login",
+"timestamp": "2026-01-15T02:00:20+00:00",
+"technique_id": "T1021.004",
+"technique_name": "Remote Services: SSH",
+"evidence_event_ids": [
+"S1-AUTH-OK"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:bruteforce:attacker-vm:target-web-01",
+"source": "source_host:attacker-vm",
+"target": "target_host:target-web-01",
+"label": "brute-force then success",
+"timestamp": "2026-01-15T02:00:20+00:00",
+"technique_id": "T1110",
+"technique_name": "Brute Force",
+"evidence_event_ids": [
+"S1-AUTH-OK"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:host_proc:target-web-01:bash",
+"source": "target_host:target-web-01",
+"target": "process:target-web-01:bash",
+"label": "executes",
+"timestamp": "2026-01-15T02:00:30+00:00",
+"technique_id": "T1059.004",
+"technique_name": "Command and Scripting Interpreter: Unix Shell",
+"evidence_event_ids": [
+"S1-PROC"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:user_proc:sysops:bash",
+"source": "user:sysops",
+"target": "process:target-web-01:bash",
+"label": "spawned by",
+"timestamp": "2026-01-15T02:00:30+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S1-PROC"
+],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:proc_payload:bash:S1-PROC",
+"source": "process:target-web-01:bash",
+"target": "payload:bash:S1-PROC",
+"label": "downloads (synthetic)",
+"timestamp": "2026-01-15T02:00:30+00:00",
+"technique_id": "T1105",
+"technique_name": "Ingress Tool Transfer",
+"evidence_event_ids": [
+"S1-PROC"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:net:attacker_ip:10.10.1.20:127.0.0.1",
+"source": "attacker_ip:10.10.1.20",
+"target": "target_host:127.0.0.1",
+"label": "network flow",
+"timestamp": "2026-01-15T02:00:32+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S1-NET"
+],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:attacker_ip:203.0.113.45",
+"source": "incident:INC-8AFB80C17C",
+"target": "attacker_ip:203.0.113.45",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:user:sysops",
+"source": "incident:INC-8AFB80C17C",
+"target": "user:sysops",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:source_host:attacker-vm",
+"source": "incident:INC-8AFB80C17C",
+"target": "source_host:attacker-vm",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:target_host:target-web-01",
+"source": "incident:INC-8AFB80C17C",
+"target": "target_host:target-web-01",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:process:target-web-01:bash",
+"source": "incident:INC-8AFB80C17C",
+"target": "process:target-web-01:bash",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:payload:bash:S1-PROC",
+"source": "incident:INC-8AFB80C17C",
+"target": "payload:bash:S1-PROC",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:attacker_ip:10.10.1.20",
+"source": "incident:INC-8AFB80C17C",
+"target": "attacker_ip:10.10.1.20",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+},
+{
+"id": "e:inc:INC-8AFB80C17C:target_host:127.0.0.1",
+"source": "incident:INC-8AFB80C17C",
+"target": "target_host:127.0.0.1",
+"label": "correlated",
+"timestamp": "",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [],
+"severity": "high",
+"animated": false
+}
+]
+},
+"analysis": {
+"incident_id": "INC-8AFB80C17C",
+"assessment": "Deterministic rule-engine assessment for INC-8AFB80C17C: SSH brute-force followed by successful authentication. 2 finding(s) correlated across 9 entities. Evidence supports suspicion; treat as under investigation, not confirmed.",
+"threat_score": 70,
+"confidence": 0.8,
+"evidence_refs": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK",
+"S1-PROC"
+],
+"attack_techniques": [
+{
+"id": "T1105",
+"name": "Ingress Tool Transfer",
+"tactic": "Command and Control",
+"confidence": 0.6,
+"evidence_refs": [
+"S1-PROC"
+]
+},
+{
+"id": "T1059.004",
+"name": "Unix Shell",
+"tactic": "Execution",
+"confidence": 0.6,
+"evidence_refs": [
+"S1-PROC"
+]
+},
+{
+"id": "T1110",
+"name": "Brute Force",
+"tactic": "Credential Access",
+"confidence": 0.9,
+"evidence_refs": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK"
+]
+},
+{
+"id": "T1021.004",
+"name": "Remote Services: SSH",
+"tactic": "Lateral Movement",
+"confidence": 0.9,
+"evidence_refs": [
+"S1-AUTH-FAIL-1",
+"S1-AUTH-FAIL-2",
+"S1-AUTH-FAIL-3",
+"S1-AUTH-OK"
+]
+}
+],
+"attack_path_summary": "SSH brute-force followed by successful authentication",
+"recommended_next_steps": [
+{
+"action": "simulate_isolate_endpoint",
+"risk_class": "R2",
+"requires_approval": true
+},
+{
+"action": "simulate_revoke_session",
+"risk_class": "R1",
+"requires_approval": true
+},
+{
+"action": "collect_mock_evidence",
+"risk_class": "R0",
+"requires_approval": false
+},
+{
+"action": "create_case",
+"risk_class": "R0",
+"requires_approval": false
+}
+],
+"missing_evidence": [
+"Endpoint EDR process tree corroboration",
+"Network capture of synthetic payload transfer"
+],
+"safety_notice": "SIMULATION ONLY \u2014 synthetic cyber-range. No real actions performed.",
+"analysis_source": "rule_engine_fallback"
+}
+},
+"INC-CAMPAIGN-1985110010": {
+"incident_id": "INC-CAMPAIGN-1985110010",
+"title": "Coordinated campaign across 3 sites (shared 198.51.100.10)",
+"status": "open",
+"risk_score": 62.0,
+"confidence": 0.7,
+"mission_impact": "medium",
+"scenario_id": "SCENARIO_3_COORDINATED_CAMPAIGN",
+"finding_count": 0,
+"created_at": "2026-08-19T02:50:16.788579+00:00",
+"entity_ids": [
+"attacker_ip:198.51.100.10",
+"incident:INC-CAMPAIGN-1985110010",
+"site:site-01",
+"site:site-02",
+"site:site-03",
+"source_host:sync-relay",
+"target_host:site-01-app-01",
+"target_host:site-02-app-01",
+"target_host:site-03-app-01",
+"user:svc-sync"
+],
+"finding_ids": [],
+"timeline": [
+{
+"event_id": "S3-site-01-AUTH-FAIL",
+"time": "2026-01-15T03:00:00+00:00",
+"event_class": "authentication",
+"message": "Failed ssh auth for svc-sync",
+"severity_id": 2
+},
+{
+"event_id": "S3-site-02-AUTH-FAIL",
+"time": "2026-01-15T03:01:00+00:00",
+"event_class": "authentication",
+"message": "Failed ssh auth for svc-sync",
+"severity_id": 2
+},
+{
+"event_id": "S3-site-01-AUTH-OK",
+"time": "2026-01-15T03:02:00+00:00",
+"event_class": "authentication",
+"message": "Successful ssh auth for svc-sync",
+"severity_id": 2
+},
+{
+"event_id": "S3-site-03-AUTH-FAIL",
+"time": "2026-01-15T03:02:00+00:00",
+"event_class": "authentication",
+"message": "Failed ssh auth for svc-sync",
+"severity_id": 2
+},
+{
+"event_id": "S3-site-02-AUTH-OK",
+"time": "2026-01-15T03:03:00+00:00",
+"event_class": "authentication",
+"message": "Successful ssh auth for svc-sync",
+"severity_id": 2
+},
+{
+"event_id": "S3-site-03-AUTH-OK",
+"time": "2026-01-15T03:04:00+00:00",
+"event_class": "authentication",
+"message": "Successful ssh auth for svc-sync",
+"severity_id": 2
+}
+],
+"evidence_refs": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-01-AUTH-OK",
+"S3-site-02-AUTH-FAIL",
+"S3-site-02-AUTH-OK",
+"S3-site-03-AUTH-FAIL",
+"S3-site-03-AUTH-OK"
+],
+"recommended_actions": [
+{
+"action": "collect_mock_evidence",
+"risk_class": "R0",
+"requires_approval": false
+},
+{
+"action": "create_case",
+"risk_class": "R0",
+"requires_approval": false
+}
+],
+"graph": {
+"incident_id": "INC-CAMPAIGN-1985110010",
+"nodes": [
+{
+"id": "site:site-01",
+"type": "site",
+"data": {
+"label": "Site site-01",
+"entity_type": "site",
+"severity": "low",
+"evidence_event_ids": []
+},
+"position": {
+"x": 0.0,
+"y": 0.0
+}
+},
+{
+"id": "attacker_ip:198.51.100.10",
+"type": "attacker_ip",
+"data": {
+"label": "198.51.100.10",
+"entity_type": "attacker_ip",
+"severity": "low",
+"evidence_event_ids": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-02-AUTH-FAIL",
+"S3-site-01-AUTH-OK",
+"S3-site-03-AUTH-FAIL",
+"S3-site-02-AUTH-OK",
+"S3-site-03-AUTH-OK"
+]
+},
+"position": {
+"x": 220.0,
+"y": 0.0
+}
+},
+{
+"id": "user:svc-sync",
+"type": "user",
+"data": {
+"label": "svc-sync",
+"entity_type": "user",
+"severity": "low",
+"evidence_event_ids": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-02-AUTH-FAIL",
+"S3-site-01-AUTH-OK",
+"S3-site-03-AUTH-FAIL",
+"S3-site-02-AUTH-OK",
+"S3-site-03-AUTH-OK"
+]
+},
+"position": {
+"x": 440.0,
+"y": 0.0
+}
+},
+{
+"id": "source_host:sync-relay",
+"type": "source_host",
+"data": {
+"label": "sync-relay",
+"entity_type": "source_host",
+"severity": "low",
+"evidence_event_ids": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-02-AUTH-FAIL",
+"S3-site-01-AUTH-OK",
+"S3-site-03-AUTH-FAIL",
+"S3-site-02-AUTH-OK",
+"S3-site-03-AUTH-OK"
+]
+},
+"position": {
+"x": 660.0,
+"y": 0.0
+}
+},
+{
+"id": "target_host:site-01-app-01",
+"type": "target_host",
+"data": {
+"label": "site-01-app-01",
+"entity_type": "target_host",
+"severity": "medium",
+"evidence_event_ids": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-01-AUTH-OK"
+]
+},
+"position": {
+"x": 880.0,
+"y": 0.0
+}
+},
+{
+"id": "site:site-02",
+"type": "site",
+"data": {
+"label": "Site site-02",
+"entity_type": "site",
+"severity": "low",
+"evidence_event_ids": []
+},
+"position": {
+"x": 0.0,
+"y": 120.0
+}
+},
+{
+"id": "target_host:site-02-app-01",
+"type": "target_host",
+"data": {
+"label": "site-02-app-01",
+"entity_type": "target_host",
+"severity": "medium",
+"evidence_event_ids": [
+"S3-site-02-AUTH-FAIL",
+"S3-site-02-AUTH-OK"
+]
+},
+"position": {
+"x": 880.0,
+"y": 120.0
+}
+},
+{
+"id": "site:site-03",
+"type": "site",
+"data": {
+"label": "Site site-03",
+"entity_type": "site",
+"severity": "low",
+"evidence_event_ids": []
+},
+"position": {
+"x": 0.0,
+"y": 240.0
+}
+},
+{
+"id": "target_host:site-03-app-01",
+"type": "target_host",
+"data": {
+"label": "site-03-app-01",
+"entity_type": "target_host",
+"severity": "medium",
+"evidence_event_ids": [
+"S3-site-03-AUTH-FAIL",
+"S3-site-03-AUTH-OK"
+]
+},
+"position": {
+"x": 880.0,
+"y": 240.0
+}
+},
+{
+"id": "incident:INC-CAMPAIGN-1985110010",
+"type": "incident",
+"data": {
+"label": "INC-CAMPAIGN-1985110010",
+"entity_type": "incident",
+"severity": "critical",
+"evidence_event_ids": []
+},
+"position": {
+"x": 1540.0,
+"y": 0.0
+}
+}
+],
+"edges": [
+{
+"id": "e:ip_user:198.51.100.10:svc-sync",
+"source": "attacker_ip:198.51.100.10",
+"target": "user:svc-sync",
+"label": "authenticates as",
+"timestamp": "2026-01-15T03:00:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-02-AUTH-FAIL",
+"S3-site-01-AUTH-OK",
+"S3-site-03-AUTH-FAIL",
+"S3-site-02-AUTH-OK",
+"S3-site-03-AUTH-OK"
+],
+"severity": "low",
+"animated": false
+},
+{
+"id": "e:user_shost:svc-sync:sync-relay",
+"source": "user:svc-sync",
+"target": "source_host:sync-relay",
+"label": "from host",
+"timestamp": "2026-01-15T03:00:00+00:00",
+"technique_id": "",
+"technique_name": "",
+"evidence_event_ids": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-02-AUTH-FAIL",
+"S3-site-01-AUTH-OK",
+"S3-site-03-AUTH-FAIL",
+"S3-site-02-AUTH-OK",
+"S3-site-03-AUTH-OK"
+],
+"severity": "low",
+"animated": false
+},
+{
+"id": "e:shost_thost:sync-relay:site-01-app-01",
+"source": "source_host:sync-relay",
+"target": "target_host:site-01-app-01",
+"label": "SSH login",
+"timestamp": "2026-01-15T03:02:00+00:00",
+"technique_id": "T1021.004",
+"technique_name": "Remote Services: SSH",
+"evidence_event_ids": [
+"S3-site-01-AUTH-OK"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:bruteforce:sync-relay:site-01-app-01",
+"source": "source_host:sync-relay",
+"target": "target_host:site-01-app-01",
+"label": "brute-force then success",
+"timestamp": "2026-01-15T03:02:00+00:00",
+"technique_id": "T1110",
+"technique_name": "Brute Force",
+"evidence_event_ids": [
+"S3-site-01-AUTH-OK"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:shost_thost:sync-relay:site-02-app-01",
+"source": "source_host:sync-relay",
+"target": "target_host:site-02-app-01",
+"label": "SSH login",
+"timestamp": "2026-01-15T03:03:00+00:00",
+"technique_id": "T1021.004",
+"technique_name": "Remote Services: SSH",
+"evidence_event_ids": [
+"S3-site-02-AUTH-OK"
+],
+"severity": "high",
+"animated": true
+},
+{
+"id": "e:shost_thost:sync-relay:site-03-app-01",
+"source": "source_host:sync-relay",
+"target": "target_host:site-03-app-01",
+"label": "SSH login",
+"timestamp": "2026-01-15T03:04:00+00:00",
+"technique_id": "T1021.004",
+"technique_name": "Remote Services: SSH",
+"evidence_event_ids": [
+"S3-site-03-AUTH-OK"
+],
+"severity": "high",
+"animated": true
+}
+]
+},
+"analysis": {
+"incident_id": "INC-CAMPAIGN-1985110010",
+"assessment": "Deterministic rule-engine assessment for INC-CAMPAIGN-1985110010: Coordinated campaign across 3 sites (shared 198.51.100.10). 0 finding(s) correlated across 10 entities. Evidence supports suspicion; treat as under investigation, not confirmed.",
+"threat_score": 62,
+"confidence": 0.7,
+"evidence_refs": [
+"S3-site-01-AUTH-FAIL",
+"S3-site-01-AUTH-OK",
+"S3-site-02-AUTH-FAIL",
+"S3-site-02-AUTH-OK",
+"S3-site-03-AUTH-FAIL",
+"S3-site-03-AUTH-OK"
+],
+"attack_techniques": [],
+"attack_path_summary": "Coordinated campaign across 3 sites (shared 198.51.100.10)",
+"recommended_next_steps": [
+{
+"action": "collect_mock_evidence",
+"risk_class": "R0",
+"requires_approval": false
+},
+{
+"action": "create_case",
+"risk_class": "R0",
+"requires_approval": false
+}
+],
+"missing_evidence": [
+"Endpoint EDR process tree corroboration",
+"Network capture of synthetic payload transfer"
+],
+"safety_notice": "SIMULATION ONLY \u2014 synthetic cyber-range. No real actions performed.",
+"analysis_source": "rule_engine_fallback"
+}
+}
+}
+}

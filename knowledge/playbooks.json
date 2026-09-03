@@ -1,0 +1,49 @@
+{
+  "source_note": "Synthetic incident-response playbooks. All actions are SIMULATION ONLY.",
+  "items": [
+    {
+      "document_id": "PB-SSH-COMPROMISE",
+      "id": "playbook_ssh_compromise",
+      "title": "SSH compromise / lateral movement response",
+      "summary": "For brute-force + SSH lateral movement + payload retrieval: collect mock evidence, simulate session revocation, simulate endpoint isolation (requires approval), open case. Confirm evidence before containment.",
+      "recommended_actions": ["collect_mock_evidence", "simulate_revoke_session", "simulate_isolate_endpoint", "create_case"],
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    },
+    {
+      "document_id": "PB-INSIDER",
+      "id": "playbook_insider_misuse",
+      "title": "Insider misuse response",
+      "summary": "For off-window access to restricted/canary assets by a valid identity: collect mock evidence, simulate session revocation, open case, engage HR/insider-threat process (out of scope for prototype).",
+      "recommended_actions": ["collect_mock_evidence", "simulate_revoke_session", "create_case"],
+      "classification": "restricted",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    },
+    {
+      "document_id": "PB-CANARY",
+      "id": "playbook_canary",
+      "title": "Canary/decoy interaction response",
+      "summary": "Any canary interaction is high signal. Activate additional isolated decoys, collect mock evidence, open case.",
+      "recommended_actions": ["activate_decoy", "collect_mock_evidence", "create_case"],
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    },
+    {
+      "document_id": "PB-CAMPAIGN",
+      "id": "playbook_campaign",
+      "title": "Cross-site campaign correlation",
+      "summary": "Correlate low-severity findings sharing identity/infrastructure across sites into one campaign incident; escalate for coordinated review.",
+      "recommended_actions": ["collect_mock_evidence", "create_case"],
+      "classification": "unclassified",
+      "approval_state": "approved",
+      "site_id": "*",
+      "version": "1.0"
+    }
+  ]
+}
