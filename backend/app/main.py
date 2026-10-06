@@ -16,6 +16,7 @@ from .database import init_db
 from .routes import (
     actions,
     analysis,
+    blast_radius,
     graph,
     health,
     incidents,
@@ -48,7 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for module in (health, telemetry, scenarios, incidents, graph, metrics, analysis, actions):
+for module in (health, telemetry, scenarios, incidents, blast_radius, graph, metrics, analysis, actions):
     app.include_router(module.router)
 
 
