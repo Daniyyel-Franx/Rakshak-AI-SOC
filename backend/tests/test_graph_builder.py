@@ -42,3 +42,51 @@ def test_canary_creates_decoy_node():
     ev = scenario_engine.build_events("SCENARIO_2_INSIDER_MISUSE")
     g = graph_builder.build_graph(ev)
     assert any(n["type"] == "decoy" for n in g["nodes"])
+
+
+def test_lsass_edge_from_sigma():
+    """LSASS process event -> technique_id T1003.001 sourced from Sigma, not hardcoded.
+
+    This technique has no prior hardcoded equivalent in graph_builder.py, so its
+    presence on the edge proves the result genuinely came from SigmaEngine.
+    The evidence dict (field->value) must trace back to the actual Sigma match.
+    """
+    lsass_ev = {
+        "event_id": "EVT-LSASS-001",
+        "event_class": "process_activity",
+        "event_time": "2026-01-15T03:00:00Z",
+        "severity_id": 4,
+        "site_id": "site-01",
+        "user": {"name": "SYSTEM"},
+        "device": {"hostname": "win-dc-01"},
+        "process": {
+            "name": "lsass.exe",
+            "cmd_line": "C:\\Windows\\System32\\lsass.exe",
+            "file": {"path": "C:\\Windows\\System32\\lsass.exe"},
+        },
+    }
+
+    g = graph_builder.build_graph([lsass_ev])
+
+    # Must produce exactly one technique-tagged edge
+    tech_edges = [e for e in g["edges"] if e.get("technique_id")]
+    assert len(tech_edges) == 1, f"expected 1 technique edge, got {len(tech_edges)}"
+
+    edge = tech_edges[0]
+
+    # Technique ID must be T1003.001 (from the LSASS Sigma rule)
+    assert edge["technique_id"] == "T1003.001", (
+        f"expected T1003.001 from Sigma, got {edge['technique_id']!r}"
+    )
+
+    # Evidence must cite the actual Sigma-matched field/value, not a hardcoded string
+    assert "process.file.path" in edge["evidence"], (
+        "evidence missing 'process.file.path' — technique_id may be hardcoded, not Sigma-sourced"
+    )
+    assert edge["evidence"]["process.file.path"].lower().endswith("lsass.exe"), (
+        f"evidence value unexpected: {edge['evidence']['process.file.path']!r}"
+    )
+
+    # The edge must reference the event ID
+    assert "EVT-LSASS-001" in edge["evidence_event_ids"]
+

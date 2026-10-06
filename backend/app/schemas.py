@@ -88,6 +88,9 @@ class GraphEdge(BaseModel):
     evidence_event_ids: list[str] = Field(default_factory=list)
     severity: str = "low"
     animated: bool = False
+    # Sigma match evidence: field-path -> matched-value dict populated when
+    # technique_id originates from SigmaEngine (absent for hardcoded edges).
+    evidence: dict[str, Any] = Field(default_factory=dict)
 
 
 class GraphResponse(BaseModel):

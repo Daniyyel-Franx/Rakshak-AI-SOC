@@ -14,6 +14,10 @@ from typing import Any
 
 import networkx as nx
 
+from .detection.sigma_engine import SigmaEngine
+
+_SIGMA_ENGINE = SigmaEngine()
+
 # Layer index controls deterministic left-to-right layout.
 LAYER = {
     "site": 0,
@@ -71,7 +75,7 @@ class _GraphState:
     def add_edge(self, edge_id: str, source: str, target: str, label: str, timestamp: str,
                  technique_id: str = "", technique_name: str = "",
                  evidence: list[str] | None = None, severity: str = "low",
-                 animated: bool = False) -> None:
+                 animated: bool = False, extra: dict[str, Any] | None = None) -> None:
         if edge_id in self.edges:
             existing = self.edges[edge_id]
             for e in (evidence or []):
@@ -79,6 +83,8 @@ class _GraphState:
                     existing["evidence_event_ids"].append(e)
             existing["severity"] = _max_sev(existing["severity"], severity)
             existing["animated"] = existing["animated"] or animated
+            if extra:
+                existing.update(extra)
             return
         self.edges[edge_id] = {
             "id": edge_id,
@@ -91,6 +97,7 @@ class _GraphState:
             "evidence_event_ids": list(evidence or []),
             "severity": severity,
             "animated": animated,
+            **(extra or {}),
         }
 
 
@@ -102,7 +109,8 @@ def _sort_key(ev: dict[str, Any]) -> tuple[str, str, str]:
     )
 
 
-def build_graph(events: list[dict[str, Any]], incident_id: str = "") -> dict[str, Any]:
+def build_graph(events: list[dict[str, Any]], incident_id: str = "", engine: SigmaEngine | None = None) -> dict[str, Any]:
+    sigma_eng = engine or _SIGMA_ENGINE
     st = _GraphState()
     ordered = sorted(events, key=_sort_key)
 
@@ -119,6 +127,8 @@ def build_graph(events: list[dict[str, Any]], incident_id: str = "") -> dict[str
 
         if site_id:
             st.add_node(f"site:{site_id}", "site", f"Site {site_id}", "low")
+
+        sigma_matches = sigma_eng.evaluate(ev)
 
         if cls == "authentication":
             src = ev.get("source") or ev.get("src_endpoint") or {}
@@ -176,7 +186,7 @@ def build_graph(events: list[dict[str, Any]], incident_id: str = "") -> dict[str
                 st.add_edge(f"e:net:{anchor}:{dip}", anchor, dst_node, "network flow", ts,
                             evidence=[eid], severity=sev)
 
-        elif cls == "process_activity":
+        elif cls in ("process_activity", "process_access"):
             user = (ev.get("user") or {}).get("name", "unknown")
             host = (ev.get("device") or {}).get("hostname", "unknown-host")
             proc = ev.get("process") or {}
@@ -186,20 +196,29 @@ def build_graph(events: list[dict[str, Any]], incident_id: str = "") -> dict[str
             user_node = st.add_node(f"user:{user}", "user", user, sev, [eid])
             proc_node = st.add_node(f"process:{host}:{pname}", "process", pname,
                                     _max_sev("high", sev), [eid], {"cmd_line": cmd})
-            tid, tname = "", ""
-            if any(s in cmd.lower() for s in ("bash", "sh -c", "curl", "wget")):
-                tid, tname = "T1059.004", "Command and Scripting Interpreter: Unix Shell"
-            st.add_edge(f"e:host_proc:{host}:{pname}", host_node, proc_node, "executes", ts,
-                        tid, tname, [eid], _max_sev("high", sev), True)
-            st.add_edge(f"e:user_proc:{user}:{pname}", user_node, proc_node, "spawned by", ts,
-                        evidence=[eid], severity=sev)
-            # payload download initiated by process
-            if any(s in cmd.lower() for s in ("curl", "wget", "http://", "https://")):
-                pay = st.add_node(f"payload:{pname}:{eid}", "payload", "synthetic payload",
-                                  "high", [eid], {"synthetic": True})
-                st.add_edge(f"e:proc_payload:{pname}:{eid}", proc_node, pay,
-                            "downloads (synthetic)", ts, "T1105", "Ingress Tool Transfer",
-                            [eid], "high", True)
+            if sigma_matches:
+                match = sigma_matches[0]
+                tid = match.technique_ids[0] if match.technique_ids else ""
+                tname = match.rule_title
+                st.add_edge(f"e:host_proc:{host}:{pname}", host_node, proc_node, "executes", ts,
+                            tid, tname, [eid], _max_sev("high", sev), True, extra={"evidence": match.evidence})
+                st.add_edge(f"e:user_proc:{user}:{pname}", user_node, proc_node, "spawned by", ts,
+                            evidence=[eid], severity=sev)
+            else:
+                tid, tname = "", ""
+                if any(s in cmd.lower() for s in ("bash", "sh -c", "curl", "wget")):
+                    tid, tname = "T1059.004", "Command and Scripting Interpreter: Unix Shell"
+                st.add_edge(f"e:host_proc:{host}:{pname}", host_node, proc_node, "executes", ts,
+                            tid, tname, [eid], _max_sev("high", sev), True)
+                st.add_edge(f"e:user_proc:{user}:{pname}", user_node, proc_node, "spawned by", ts,
+                            evidence=[eid], severity=sev)
+                # payload download initiated by process
+                if any(s in cmd.lower() for s in ("curl", "wget", "http://", "https://")):
+                    pay = st.add_node(f"payload:{pname}:{eid}", "payload", "synthetic payload",
+                                      "high", [eid], {"synthetic": True})
+                    st.add_edge(f"e:proc_payload:{pname}:{eid}", proc_node, pay,
+                                "downloads (synthetic)", ts, "T1105", "Ingress Tool Transfer",
+                                [eid], "high", True)
 
         elif cls == "file_activity":
             user = (ev.get("user") or {}).get("name", "unknown")
@@ -208,7 +227,15 @@ def build_graph(events: list[dict[str, Any]], incident_id: str = "") -> dict[str
             path = f.get("path", "file")
             is_canary = bool(unmapped.get("is_canary"))
             user_node = st.add_node(f"user:{user}", "user", user, sev, [eid])
-            if is_canary:
+            if sigma_matches:
+                match = sigma_matches[0]
+                tid = match.technique_ids[0] if match.technique_ids else ""
+                tname = match.rule_title
+                node = st.add_node(f"file:{path}", "file", f.get("name", path),
+                                   _max_sev("high", sev), [eid])
+                st.add_edge(f"e:user_file:{user}:{path}", user_node, node, "accessed", ts,
+                            tid, tname, [eid], _max_sev("high", sev), True, extra={"evidence": match.evidence})
+            elif is_canary:
                 node = st.add_node(f"decoy:{path}", "decoy", f"canary: {f.get('name', path)}",
                                    "critical", [eid], {"synthetic": True})
                 st.add_edge(f"e:user_decoy:{user}:{path}", user_node, node,

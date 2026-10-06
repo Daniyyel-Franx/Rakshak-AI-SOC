@@ -1,0 +1,20 @@
+title: Shadow File Read
+id: 44444444-4444-4444-4444-444444444444
+status: experimental
+level: high
+author: project team
+logsource:
+  category: file_event
+  product: linux
+detection:
+  selection:
+    TargetFilename: '/etc/shadow'
+  filter:
+    Image|endswith:
+      - '/passwd'
+      - '/login'
+      - '/sshd'
+  condition: selection and not filter
+tags:
+  - attack.credential_access
+  - attack.t1003.008

@@ -1,0 +1,15 @@
+title: LSASS Process Access
+id: 55555555-5555-5555-5555-555555555555
+status: experimental
+level: high
+author: project team
+logsource:
+  category: process_access
+  product: windows
+detection:
+  selection:
+    TargetImage|endswith: '\lsass.exe'
+  condition: selection
+tags:
+  - attack.credential_access
+  - attack.t1003.001

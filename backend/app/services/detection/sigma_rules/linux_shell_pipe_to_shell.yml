@@ -1,0 +1,15 @@
+title: Linux Shell Pipe to Shell
+id: 33333333-3333-3333-3333-333333333333
+status: experimental
+level: high
+author: project team
+logsource:
+  category: process_creation
+  product: linux
+detection:
+  selection:
+    CommandLine|re: '(curl|wget).*\|\s*(bash|sh)'
+  condition: selection
+tags:
+  - attack.execution
+  - attack.t1059.004
