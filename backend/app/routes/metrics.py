@@ -75,6 +75,11 @@ def summary(session: Session = Depends(get_session)) -> MetricsSummary:
         for i in incidents if i.scenario_id == "SCENARIO_3_COORDINATED_CAMPAIGN"
     ]
 
+    provenance_breakdown = {
+        "events": {"demo": sum(1 for e in events if e.source == "demo"), "live": sum(1 for e in events if e.source == "live")},
+        "incidents": {"demo": sum(1 for i in incidents if i.source == "demo"), "live": sum(1 for i in incidents if i.source == "live")},
+    }
+
     return MetricsSummary(
         total_events=len(events),
         active_incidents=len(active),
@@ -90,4 +95,5 @@ def summary(session: Session = Depends(get_session)) -> MetricsSummary:
         top_entities=top_entities,
         incident_status=dict(incident_status),
         cross_site_campaigns=campaigns,
+        provenance_breakdown=provenance_breakdown,
     )

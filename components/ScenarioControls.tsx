@@ -43,6 +43,8 @@ export function ScenarioControls({ onReplay }: { onReplay?: (incidentId: string 
       )
       refreshAll()
       onReplay?.(res.incident_id)
+    } catch (e: any) {
+      setLastMsg(`Replay failed: ${e.message || String(e)}`)
     } finally {
       setBusy(null)
     }
@@ -58,6 +60,8 @@ export function ScenarioControls({ onReplay }: { onReplay?: (incidentId: string 
           : `Link loss simulated. Local scoring continues; events queue locally (${res.queued}).`,
       )
       refreshAll()
+    } catch (e: any) {
+      setLastMsg(`Link toggle failed: ${e.message || String(e)}`)
     } finally {
       setBusy(null)
     }
@@ -70,6 +74,8 @@ export function ScenarioControls({ onReplay }: { onReplay?: (incidentId: string 
       setLastMsg("Demo data cleared.")
       refreshAll()
       onReplay?.(null)
+    } catch (e: any) {
+      setLastMsg(`Clear failed: ${e.message || String(e)}`)
     } finally {
       setBusy(null)
     }
@@ -121,7 +127,9 @@ export function ScenarioControls({ onReplay }: { onReplay?: (incidentId: string 
             ) : (
               <Plug className="h-3.5 w-3.5" />
             )}
-            {linkOnline ? "Simulate link loss" : "Restore link"}
+            {linkOnline
+              ? "Simulate link loss"
+              : `Restore link (${link?.queued ?? 0} queued)`}
           </Button>
         </div>
 

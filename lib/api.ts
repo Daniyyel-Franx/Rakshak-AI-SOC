@@ -11,6 +11,7 @@ import {
   aiAnalysisSchema,
   replaySchema,
   simulatedActionSchema,
+  blastRadiusSchema,
 } from "./validation"
 import type {
   HealthResponse,
@@ -23,6 +24,7 @@ import type {
   AiAnalysis,
   ReplayResponse,
   SimulatedActionResponse,
+  BlastRadiusResponse,
   ConnectionMode,
 } from "./types"
 
@@ -58,21 +60,40 @@ async function req<T>(
   fallback: () => T,
   init?: RequestInit,
 ): Promise<T> {
+  let res: Response
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
+    res = await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
       signal: AbortSignal.timeout(6000),
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const json = (await res.json()) as unknown
+  } catch (netErr) {
+    if (init?.method && init.method.toUpperCase() !== "GET") {
+      throw new Error(`Network error on mutation for ${path}: ${String(netErr)}`)
+    }
+    // Backend offline / connection refused / timeout -> serve seeded fallback
+    setMode("seeded")
+    return fallback()
+  }
+
+  // Server responded:
+  if (!res.ok) {
+    // HTTP error from reachable server: surface error instead of masking
+    throw new Error(`HTTP ${res.status}: API request failed for ${path}`)
+  }
+
+  const json = (await res.json()) as unknown
+  try {
     const parsed = schema.parse(json)
     setMode("live")
     return parsed
-  } catch (err) {
-    // Network failure OR schema mismatch -> serve seeded fallback.
-    setMode("seeded")
-    return fallback()
+  } catch (schemaErr) {
+    // Live backend returned data, but schema validation failed:
+    // Report as error so it is visible to UI instead of silently appearing valid.
+    console.error(`[API Schema Mismatch] ${path}:`, schemaErr)
+    throw new Error(
+      `Schema validation error for ${path}: ${schemaErr instanceof Error ? schemaErr.message : String(schemaErr)}`,
+    )
   }
 }
 
@@ -176,6 +197,7 @@ export async function simulateAction(body: {
       result: body.approved_by
         ? "SIMULATED: action executed against synthetic range only. No real change."
         : "SIMULATED: awaiting approval.",
+      rollback_data: { restore: "synthetic snapshot", simulated: true },
       rollback: { restore: "synthetic snapshot", simulated: true },
       simulation_only: true,
     }),
@@ -186,42 +208,101 @@ export async function simulateAction(body: {
 // Link-loss / restore controls (best-effort; seeded no-ops offline).
 export async function setLink(online: boolean): Promise<{ online: boolean; queued: number }> {
   const path = online ? "/api/scenarios/link/restore" : "/api/scenarios/link/down"
-  try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(6000),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const j = (await res.json()) as { online?: boolean; queued?: number; replayed?: number }
-    return { online, queued: j.queued ?? 0 }
-  } catch {
-    return { online, queued: 0 }
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(6000),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const j = (await res.json()) as {
+    online?: boolean
+    link_down?: boolean
+    queued?: number
+    queued_offline_events?: number
   }
+  const isOnline = j.online !== undefined ? j.online : (j.link_down !== undefined ? !j.link_down : online)
+  const queueCount = j.queued ?? j.queued_offline_events ?? 0
+  return { online: isOnline, queued: queueCount }
 }
 
 export async function getLinkStatus(): Promise<{ online: boolean; queued: number }> {
-  try {
-    const res = await fetch(`${API_BASE}/api/scenarios/link/status`, {
-      signal: AbortSignal.timeout(6000),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const j = (await res.json()) as { online?: boolean; queued?: number }
-    return { online: j.online ?? true, queued: j.queued ?? 0 }
-  } catch {
-    return { online: true, queued: 0 }
+  const res = await fetch(`${API_BASE}/api/scenarios/link/status`, {
+    signal: AbortSignal.timeout(6000),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const j = (await res.json()) as {
+    online?: boolean
+    link_down?: boolean
+    queued?: number
+    queued_offline_events?: number
   }
+  const isOnline = j.online !== undefined ? j.online : (j.link_down !== undefined ? !j.link_down : true)
+  const queueCount = j.queued ?? j.queued_offline_events ?? 0
+  return { online: isOnline, queued: queueCount }
+}
+
+export interface IngestResponse {
+  source_type: string
+  ingested: number
+  duplicates: number
+  errors: string[]
+  incident_id: string | null
+  status: string
+}
+
+export async function ingestRawLogs(body: {
+  source_type: string
+  records: unknown[]
+  site_id?: string
+}): Promise<IngestResponse> {
+  const res = await fetch(`${API_BASE}/api/ingest/raw`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15000),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => "")
+    throw new Error(`Ingest failed (${res.status}): ${text || res.statusText}`)
+  }
+  return res.json()
+}
+
+export async function ingestLogFile(
+  file: File,
+  sourceType: string,
+  siteId: string = "site-01",
+): Promise<IngestResponse> {
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("source_type", sourceType)
+  formData.append("site_id", siteId)
+
+  const res = await fetch(`${API_BASE}/api/ingest/file`, {
+    method: "POST",
+    body: formData,
+    signal: AbortSignal.timeout(30000),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => "")
+    throw new Error(`File ingest failed (${res.status}): ${text || res.statusText}`)
+  }
+  return res.json()
+}
+
+export async function getBlastRadius(incidentId: string): Promise<BlastRadiusResponse> {
+  return req(
+    `/api/incidents/${incidentId}/blast-radius`,
+    blastRadiusSchema,
+    () => ({ incident_id: incidentId, hosts: [] }),
+  )
 }
 
 export async function clearDemo(): Promise<{ status: string }> {
-  try {
-    const res = await fetch(`${API_BASE}/api/scenarios/clear`, {
-      method: "POST",
-      signal: AbortSignal.timeout(6000),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return (await res.json()) as { status: string }
-  } catch {
-    return { status: "seeded" }
-  }
+  const res = await fetch(`${API_BASE}/api/scenarios/clear`, {
+    method: "POST",
+    signal: AbortSignal.timeout(6000),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return (await res.json()) as { status: string }
 }

@@ -44,7 +44,7 @@ export function EntityRiskTable({ metrics }: { metrics?: MetricsSummary }) {
                       className="inline-flex min-w-[34px] justify-center rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold"
                       style={{
                         color: SEVERITY_COLOR[tone],
-                        backgroundColor: `color-mix(in oklch, ${SEVERITY_COLOR[tone]} 18%, transparent)`,
+                        backgroundColor: `color-mix(in srgb, ${SEVERITY_COLOR[tone]} 18%, transparent)`,
                       }}
                     >
                       {r.risk.toFixed(0)}

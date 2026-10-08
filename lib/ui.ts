@@ -1,11 +1,17 @@
 import type { SeverityLevel } from "./types"
 
 // Severity -> chart/token color. Uses the 5-color design tokens.
-export const SEVERITY_COLOR: Record<SeverityLevel, string> = {
-  low: "var(--chart-4)", // green
+export const SEVERITY_COLOR: Record<string, string> = {
+  info: "var(--chart-1)", // cyan
+  low: "var(--chart-4)", // emerald
   medium: "var(--chart-2)", // amber
   high: "var(--chart-3)", // red
   critical: "var(--destructive)",
+}
+
+export function severityColor(s: string): string {
+  const norm = (s || "").toLowerCase()
+  return SEVERITY_COLOR[norm] ?? "var(--chart-1)"
 }
 
 export const SEVERITY_ID_LABEL: Record<number, SeverityLevel> = {

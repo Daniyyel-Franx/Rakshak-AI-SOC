@@ -20,6 +20,7 @@ from .routes import (
     graph,
     health,
     incidents,
+    ingest,
     metrics,
     scenarios,
     telemetry,
@@ -49,7 +50,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for module in (health, telemetry, scenarios, incidents, blast_radius, graph, metrics, analysis, actions):
+for module in (health, telemetry, scenarios, incidents, blast_radius, graph, metrics, analysis, actions, ingest):
     app.include_router(module.router)
 
 

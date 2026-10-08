@@ -16,6 +16,7 @@ def _summary(inc: Incident) -> IncidentSummary:
         risk_score=inc.risk_score, confidence=inc.confidence,
         mission_impact=inc.mission_impact, scenario_id=inc.scenario_id,
         finding_count=len(inc.finding_ids_json or []), created_at=inc.created_at,
+        source=getattr(inc, "source", "demo"),
     )
 
 

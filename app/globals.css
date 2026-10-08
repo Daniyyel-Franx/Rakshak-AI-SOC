@@ -50,113 +50,125 @@
 
 :root {
   color-scheme: dark;
-  /* Rakshak-AI SOC: deep slate/navy console with cyan command accent
-     and amber/red severity signalling. 5-color system. */
-  --background: oklch(0.16 0.02 250);
-  --foreground: oklch(0.93 0.01 240);
-  --card: oklch(0.2 0.022 250);
-  --card-foreground: oklch(0.93 0.01 240);
-  --popover: oklch(0.19 0.022 250);
-  --popover-foreground: oklch(0.93 0.01 240);
-  --primary: oklch(0.72 0.14 195);
-  --primary-foreground: oklch(0.16 0.02 250);
-  --secondary: oklch(0.26 0.025 250);
-  --secondary-foreground: oklch(0.93 0.01 240);
-  --muted: oklch(0.24 0.02 250);
-  --muted-foreground: oklch(0.64 0.02 245);
-  --accent: oklch(0.28 0.03 250);
-  --accent-foreground: oklch(0.93 0.01 240);
-  --destructive: oklch(0.62 0.22 25);
-  --destructive-foreground: oklch(0.97 0.01 240);
-  --border: oklch(0.3 0.02 250);
-  --input: oklch(0.28 0.02 250);
-  --ring: oklch(0.72 0.14 195);
-  /* charts: cyan / amber / red / green / slate */
-  --chart-1: oklch(0.72 0.14 195);
-  --chart-2: oklch(0.78 0.15 75);
-  --chart-3: oklch(0.62 0.22 25);
-  --chart-4: oklch(0.72 0.15 155);
-  --chart-5: oklch(0.6 0.03 245);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.18 0.022 250);
-  --sidebar-foreground: oklch(0.93 0.01 240);
-  --sidebar-primary: oklch(0.72 0.14 195);
-  --sidebar-primary-foreground: oklch(0.16 0.02 250);
-  --sidebar-accent: oklch(0.28 0.03 250);
-  --sidebar-accent-foreground: oklch(0.93 0.01 240);
-  --sidebar-border: oklch(0.3 0.02 250);
-  --sidebar-ring: oklch(0.72 0.14 195);
+  /* Stitch Design System: Deep Space HUD Incident Response
+     Void Space Canvas (#05070d, #0a0f1d) with Substrate Glass (#0c1222),
+     Electric Cyan (#00f0ff), Bio-Shield Emerald (#00e5a3),
+     Warning Amber (#ffb020), Critical Neon Flare (#ff0055),
+     Containment Violet (#a855f7). */
+  --background: #080c14;
+  --foreground: #e1e2ec;
+  --card: rgba(12, 18, 34, 0.75);
+  --card-foreground: #e1e2ec;
+  --popover: #0c1222;
+  --popover-foreground: #e1e2ec;
+  --primary: #00f0ff;
+  --primary-foreground: #002022;
+  --secondary: rgba(0, 240, 255, 0.08);
+  --secondary-foreground: #dbfcff;
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: #849495;
+  --accent: rgba(0, 240, 255, 0.14);
+  --accent-foreground: #00f0ff;
+  --destructive: #ff0055;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 240, 255, 0.18);
+  --input: rgba(0, 240, 255, 0.12);
+  --ring: #00f0ff;
+
+  /* Tactical SOC charts and semantic tokens:
+     --chart-1: Electric Cyan (#00f0ff)
+     --chart-2: Warning Amber (#ffb020)
+     --chart-3: Critical Neon Red (#ff0055)
+     --chart-4: Bio-Shield Emerald (#00e5a3)
+     --chart-5: Containment Violet (#a855f7) */
+  --chart-1: #00f0ff;
+  --chart-2: #ffb020;
+  --chart-3: #ff0055;
+  --chart-4: #00e5a3;
+  --chart-5: #a855f7;
+
+  --radius: 0.375rem;
+  --sidebar: #060911;
+  --sidebar-foreground: #e1e2ec;
+  --sidebar-primary: #00f0ff;
+  --sidebar-primary-foreground: #002022;
+  --sidebar-accent: rgba(0, 240, 255, 0.12);
+  --sidebar-accent-foreground: #00f0ff;
+  --sidebar-border: rgba(0, 240, 255, 0.16);
+  --sidebar-ring: #00f0ff;
 }
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #080c14;
+  --foreground: #e1e2ec;
+  --card: rgba(12, 18, 34, 0.75);
+  --card-foreground: #e1e2ec;
+  --popover: #0c1222;
+  --popover-foreground: #e1e2ec;
+  --primary: #00f0ff;
+  --primary-foreground: #002022;
+  --secondary: rgba(0, 240, 255, 0.08);
+  --secondary-foreground: #dbfcff;
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: #849495;
+  --accent: rgba(0, 240, 255, 0.14);
+  --accent-foreground: #00f0ff;
+  --destructive: #ff0055;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 240, 255, 0.18);
+  --input: rgba(0, 240, 255, 0.12);
+  --ring: #00f0ff;
+  --chart-1: #00f0ff;
+  --chart-2: #ffb020;
+  --chart-3: #ff0055;
+  --chart-4: #00e5a3;
+  --chart-5: #a855f7;
+  --sidebar: #060911;
+  --sidebar-foreground: #e1e2ec;
+  --sidebar-primary: #00f0ff;
+  --sidebar-primary-foreground: #002022;
+  --sidebar-accent: rgba(0, 240, 255, 0.12);
+  --sidebar-accent-foreground: #00f0ff;
+  --sidebar-border: rgba(0, 240, 255, 0.16);
+  --sidebar-ring: #00f0ff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
     color-scheme: dark;
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: #080c14;
+    --foreground: #e1e2ec;
+    --card: rgba(12, 18, 34, 0.75);
+    --card-foreground: #e1e2ec;
+    --popover: #0c1222;
+    --popover-foreground: #e1e2ec;
+    --primary: #00f0ff;
+    --primary-foreground: #002022;
+    --secondary: rgba(0, 240, 255, 0.08);
+    --secondary-foreground: #dbfcff;
+    --muted: rgba(255, 255, 255, 0.05);
+    --muted-foreground: #849495;
+    --accent: rgba(0, 240, 255, 0.14);
+    --accent-foreground: #00f0ff;
+    --destructive: #ff0055;
+    --destructive-foreground: #ffffff;
+    --border: rgba(0, 240, 255, 0.18);
+    --input: rgba(0, 240, 255, 0.12);
+    --ring: #00f0ff;
+    --chart-1: #00f0ff;
+    --chart-2: #ffb020;
+    --chart-3: #ff0055;
+    --chart-4: #00e5a3;
+    --chart-5: #a855f7;
+    --sidebar: #060911;
+    --sidebar-foreground: #e1e2ec;
+    --sidebar-primary: #00f0ff;
+    --sidebar-primary-foreground: #002022;
+    --sidebar-accent: rgba(0, 240, 255, 0.12);
+    --sidebar-accent-foreground: #00f0ff;
+    --sidebar-border: rgba(0, 240, 255, 0.16);
+    --sidebar-ring: #00f0ff;
   }
 }
 

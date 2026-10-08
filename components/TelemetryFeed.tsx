@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ChevronRight, Filter } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -28,12 +28,18 @@ function str(v: unknown): string {
   return typeof v === "string" ? v : ""
 }
 
-export function TelemetryFeed() {
+export function TelemetryFeed({ siteFilter }: { siteFilter?: string } = {}) {
   const { data, isLoading, error } = useTelemetry(80)
   const [cls, setCls] = useState(ALL)
   const [sev, setSev] = useState(ALL)
-  const [site, setSite] = useState(ALL)
+  const [site, setSite] = useState(siteFilter ?? ALL)
   const [selected, setSelected] = useState<OcsfEvent | null>(null)
+
+  useEffect(() => {
+    if (siteFilter !== undefined) {
+      setSite(siteFilter)
+    }
+  }, [siteFilter])
 
   const items = data?.items ?? []
 

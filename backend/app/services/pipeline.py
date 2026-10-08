@@ -17,11 +17,16 @@ from .normalizer import compute_fingerprint, normalize
 
 # --- module-level offline link state (prototype, single-process) ---
 _LINK_DOWN = False
-_OFFLINE_QUEUE: list[dict[str, Any]] = []
+_OFFLINE_QUEUE: list[tuple[dict[str, Any], str, str]] = []
 
 
 def link_status() -> dict[str, Any]:
-    return {"link_down": _LINK_DOWN, "queued_offline_events": len(_OFFLINE_QUEUE)}
+    return {
+        "link_down": _LINK_DOWN,
+        "online": not _LINK_DOWN,
+        "queued": len(_OFFLINE_QUEUE),
+        "queued_offline_events": len(_OFFLINE_QUEUE),
+    }
 
 
 def set_link_down() -> None:
@@ -32,12 +37,48 @@ def set_link_down() -> None:
 def restore_link(session: Session) -> dict[str, Any]:
     """Flush queued events to the central store with deduplication."""
     global _LINK_DOWN, _OFFLINE_QUEUE
+    
+    queued = _OFFLINE_QUEUE[:]
+    
+    # Group by (source, scenario_id)
+    from collections import defaultdict
+    batches = defaultdict(list)
+    for ev, src, scen in queued:
+        batches[(src, scen)].append(ev)
+        
+    try:
+        # Temporarily enable ingestion bypassing the offline queue check
+        _LINK_DOWN = False
+        flushed = 0
+        for (src, scen), evs in batches.items():
+            from . import scenario_engine
+            if scenario_engine.is_campaign(scen):
+                correlate_campaign(session, evs, scenario_id=scen, source=src, _bypass_queue=True)
+            else:
+                ingest_events(session, evs, scenario_id=scen, source=src, _bypass_queue=True)
+            flushed += len(evs)
+            
+        # Only clear queue if we succeeded
+        _OFFLINE_QUEUE.clear()
+        
+    except Exception:
+        # Link remains down if persistence fails
+        _LINK_DOWN = True
+        raise
+
+    return {
+        "flushed": flushed,
+        "online": True,
+        "link_down": False,
+        "queued": 0,
+        "queued_offline_events": 0
+    }
+
+
+def reset_link() -> None:
+    global _LINK_DOWN, _OFFLINE_QUEUE
     _LINK_DOWN = False
-    queued = _OFFLINE_QUEUE
-    _OFFLINE_QUEUE = []
-    result = ingest_events(session, queued, source="offline_replay")
-    result["flushed"] = len(queued)
-    return result
+    _OFFLINE_QUEUE.clear()
 
 
 def queue_count() -> int:
@@ -45,11 +86,11 @@ def queue_count() -> int:
 
 
 def ingest_events(session: Session, events: list[dict[str, Any]], *,
-                  scenario_id: str = "", source: str = "live") -> dict[str, Any]:
+                  scenario_id: str = "", source: str = "live", _bypass_queue: bool = False) -> dict[str, Any]:
     """Persist + detect for a batch of events. Deduplicates by id + fingerprint."""
-    if _LINK_DOWN and source == "live":
+    if _LINK_DOWN and not _bypass_queue:
         # hold locally; local scoring still runs (in-memory only)
-        _OFFLINE_QUEUE.extend(events)
+        _OFFLINE_QUEUE.extend((ev, source, scenario_id) for ev in events)
         local = risk_engine.evaluate(events, scenario_id)
         return {
             "ingested": 0,
@@ -64,15 +105,16 @@ def ingest_events(session: Session, events: list[dict[str, Any]], *,
     duplicates = 0
     for ev in events:
         fp = compute_fingerprint(ev)
-        if deduplicator.is_duplicate(session, ev["event_id"], fp):
+        if deduplicator.is_duplicate(session, ev["event_id"], fp, source=source):
             duplicates += 1
             continue
         row = normalize(ev)
+        row.source = source
         session.add(row)
         ingested += 1
     session.commit()
 
-    detection = _detect_and_store(session, events, scenario_id)
+    detection = _detect_and_store(session, events, scenario_id, source=source)
     audit.record(session, "ingest", {
         "source": source, "scenario_id": scenario_id,
         "ingested": ingested, "duplicates": duplicates,
@@ -86,7 +128,7 @@ def ingest_events(session: Session, events: list[dict[str, Any]], *,
     }
 
 
-def _detect_and_store(session: Session, events: list[dict[str, Any]], scenario_id: str) -> dict[str, Any]:
+def _detect_and_store(session: Session, events: list[dict[str, Any]], scenario_id: str, source: str = "demo") -> dict[str, Any]:
     result = risk_engine.evaluate(events, scenario_id)
     findings = result["findings"]
     incident = result["incident"]
@@ -117,6 +159,9 @@ def _detect_and_store(session: Session, events: list[dict[str, Any]], scenario_i
         existing.confidence = incident["confidence"]
         existing.graph_json = graph
         existing.timeline_json = incident["timeline"]
+        if existing.source == source:
+            # only update if provenance matches
+            pass
         session.add(existing)
         session.commit()
         return {"incident_id": existing.incident_id}
@@ -128,23 +173,39 @@ def _detect_and_store(session: Session, events: list[dict[str, Any]], scenario_i
         finding_ids_json=incident["finding_ids"], graph_json=graph,
         timeline_json=incident["timeline"], evidence_refs_json=incident["evidence_refs"],
         recommended_actions_json=incident["recommended_actions"], scenario_id=scenario_id,
+        source=source,
     ))
     session.commit()
     return {"incident_id": incident["incident_id"]}
 
 
-def correlate_campaign(session: Session, events: list[dict[str, Any]], scenario_id: str) -> dict[str, Any]:
+def correlate_campaign(session: Session, events: list[dict[str, Any]], scenario_id: str, *, source: str = "demo", _bypass_queue: bool = False) -> dict[str, Any]:
     """SCENARIO_3: ingest per-site low-severity events, then correlate the shared
     infrastructure/identity into a single campaign incident."""
+    
+    if _LINK_DOWN and not _bypass_queue:
+        _OFFLINE_QUEUE.extend((ev, source, scenario_id) for ev in events)
+        # return dummy local risk for campaign
+        return {
+            "ingested": 0,
+            "duplicates": 0,
+            "queued": True,
+            "queued_total": len(_OFFLINE_QUEUE),
+            "local_incident_risk": 62.0,
+            "incident_id": None,
+        }
+
     # ingest all events first (deterministic dedup)
     ingested = 0
     duplicates = 0
     for ev in events:
         fp = compute_fingerprint(ev)
-        if deduplicator.is_duplicate(session, ev["event_id"], fp):
+        if deduplicator.is_duplicate(session, ev["event_id"], fp, source=source):
             duplicates += 1
             continue
-        session.add(normalize(ev))
+        row = normalize(ev)
+        row.source = source
+        session.add(row)
         ingested += 1
     session.commit()
 
@@ -174,9 +235,12 @@ def correlate_campaign(session: Session, events: list[dict[str, Any]], scenario_
             {"action": "create_case", "risk_class": "R0", "requires_approval": False},
         ],
         scenario_id=scenario_id,
+        source=source,
     )
     if existing:
         for k, v in payload.items():
+            if k == "source" and existing.source != v:
+                continue # Do not unintentionally mix provenance
             setattr(existing, k, v)
         session.add(existing)
     else:

@@ -125,6 +125,7 @@ class IncidentSummary(BaseModel):
     scenario_id: str
     finding_count: int
     created_at: str
+    source: str = "demo"
 
 
 class IncidentDetail(IncidentSummary):
@@ -153,6 +154,7 @@ class MetricsSummary(BaseModel):
     top_entities: list[dict[str, Any]]
     incident_status: dict[str, int]
     cross_site_campaigns: list[dict[str, Any]]
+    provenance_breakdown: dict[str, dict[str, int]] = Field(default_factory=dict)
 
 
 # ----------------------------- AI Analysis -----------------------------
@@ -208,6 +210,24 @@ class SimulateActionResponse(BaseModel):
     target: str
     policy_risk_class: RiskClass
     approval_state: str
+    approved_by: str = ""
     result: str
     rollback_data: dict[str, Any]
     simulation_only: bool = True
+
+
+# ----------------------------- Raw Ingestion -----------------------------
+class RawIngestRequest(BaseModel):
+    source_type: str  # "sysmon", "auditd_execve", "auditd_file", "ssh_auth", "zeek_conn"
+    records: list[Any]
+    site_id: str = "site-01"
+
+
+class IngestResponse(BaseModel):
+    source_type: str
+    ingested: int
+    duplicates: int
+    errors: list[str] = Field(default_factory=list)
+    incident_id: str | None = None
+    status: str = "success"
+

@@ -111,7 +111,7 @@ export function ResponseActions({ incidentId, target }: { incidentId: string | n
             target: {result.target} · action_id: {result.action_id}
           </p>
           <p className="font-mono text-[10px] text-muted-foreground">
-            rollback: {JSON.stringify(result.rollback)}
+            rollback: {JSON.stringify(result.rollback_data || result.rollback || {})}
           </p>
         </div>
       ) : null}

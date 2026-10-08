@@ -12,33 +12,69 @@ function StatCard({
   value,
   icon: Icon,
   tone = "muted",
+  badge,
   hint,
 }: {
   label: string
   value: string | number
   icon: LucideIcon
   tone?: "muted" | "low" | "medium" | "high" | "critical" | "primary"
+  badge?: string
   hint?: string
 }) {
   const toneColor: Record<string, string> = {
-    muted: "text-muted-foreground",
-    primary: "text-[var(--chart-1)]",
-    low: "text-[var(--chart-4)]",
-    medium: "text-[var(--chart-2)]",
-    high: "text-[var(--chart-3)]",
-    critical: "text-[var(--destructive)]",
+    muted: "var(--muted-foreground)",
+    primary: "var(--chart-1)",
+    low: "var(--chart-4)",
+    medium: "var(--chart-2)",
+    high: "var(--chart-3)",
+    critical: "var(--destructive)",
   }
+  const color = toneColor[tone] ?? "var(--foreground)"
+
   return (
-    <Card className="flex flex-col gap-2 p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <div
+      className="flex flex-col justify-between gap-2 rounded-md p-3.5 transition-all"
+      style={{
+        background: "rgba(12, 18, 34, 0.75)",
+        border: "1px solid rgba(0, 240, 255, 0.18)",
+        backdropFilter: "blur(16px)",
+        boxShadow: "0 0 16px -4px rgba(0, 240, 255, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.06)",
+      }}
+    >
+      <div className="flex items-center justify-between gap-1.5">
+        <span
+          className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+          style={{ letterSpacing: "0.1em" }}
+        >
           {label}
         </span>
-        <Icon className={`h-4 w-4 ${toneColor[tone]}`} />
+        <Icon className="h-3.5 w-3.5 shrink-0" style={{ color }} />
       </div>
-      <span className={`font-mono text-2xl font-semibold ${toneColor[tone]}`}>{value}</span>
-      {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
-    </Card>
+      <div className="flex items-baseline justify-between gap-2">
+        <span
+          className="font-mono text-2xl font-bold tracking-tight"
+          style={{ color, textShadow: tone === "critical" || tone === "primary" ? `0 0 14px ${color}55` : undefined }}
+        >
+          {value}
+        </span>
+        {badge ? (
+          <span
+            className="rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider"
+            style={{
+              color,
+              background: `color-mix(in srgb, ${color} 15%, transparent)`,
+              border: `1px solid color-mix(in srgb, ${color} 35%, transparent)`,
+            }}
+          >
+            {badge}
+          </span>
+        ) : null}
+      </div>
+      {hint ? (
+        <span className="font-mono text-[10px] text-muted-foreground truncate">{hint}</span>
+      ) : null}
+    </div>
   )
 }
 
@@ -63,28 +99,59 @@ export function RiskSummary() {
     )
   }
 
+  const critCount = m.critical_incidents
+  const avgRisk = m.average_risk
+  const tone = riskTone(avgRisk)
+
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-      <StatCard label="Total events" value={m.total_events} icon={Activity} tone="primary" />
-      <StatCard label="Active incidents" value={m.active_incidents} icon={AlertTriangle} tone="medium" />
       <StatCard
-        label="Critical"
-        value={m.critical_incidents}
+        label="Total Events"
+        value={m.total_events.toLocaleString()}
+        icon={Activity}
+        tone="primary"
+        badge="LIVE"
+        hint="Telemetry Stream"
+      />
+      <StatCard
+        label="Active Incidents"
+        value={m.active_incidents}
+        icon={AlertTriangle}
+        tone={m.active_incidents > 0 ? "medium" : "muted"}
+        badge={m.active_incidents > 0 ? "ALERT" : "STABLE"}
+        hint={critCount > 0 ? `${critCount} Critical` : "Nominal"}
+      />
+      <StatCard
+        label="Critical Breaches"
+        value={critCount}
         icon={ShieldAlert}
-        tone={m.critical_incidents > 0 ? "critical" : "muted"}
+        tone={critCount > 0 ? "critical" : "muted"}
+        badge={critCount > 0 ? "SEV-1" : "CLEAR"}
+        hint="Host Containment"
       />
       <StatCard
-        label="Avg risk"
-        value={m.average_risk.toFixed(0)}
+        label="Global Risk Index"
+        value={avgRisk.toFixed(1)}
         icon={Gauge}
-        tone={riskTone(m.average_risk)}
+        tone={tone}
+        badge={tone.toUpperCase()}
+        hint="Calibrated Exposure"
       />
-      <StatCard label="Events / min" value={m.events_per_minute.toFixed(1)} icon={Zap} tone="primary" />
       <StatCard
-        label="Queued offline"
+        label="Triage Velocity"
+        value={`${m.events_per_minute.toFixed(1)}/m`}
+        icon={Zap}
+        tone="primary"
+        badge="ACTIVE"
+        hint="Ingestion Rate"
+      />
+      <StatCard
+        label="Queued Offline"
         value={m.queued_offline_events}
         icon={Inbox}
         tone={m.queued_offline_events > 0 ? "medium" : "muted"}
+        badge={m.queued_offline_events > 0 ? "BUFFER" : "SYNC"}
+        hint="Replay Buffer"
       />
     </div>
   )

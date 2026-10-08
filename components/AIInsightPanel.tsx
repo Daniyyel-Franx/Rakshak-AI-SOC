@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { BrainCircuit, Copy, Check, Sparkles, ShieldQuestion, AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -17,10 +17,20 @@ export function AIInsightPanel({
   incidentId: string | null
   initial?: AiAnalysis | null
 }) {
-  const [analysis, setAnalysis] = useState<AiAnalysis | null>(initial ?? null)
+  const [analysis, setAnalysis] = useState<AiAnalysis | null>(
+    initial && (initial as unknown as Record<string, unknown>).assessment ? initial : null
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (initial && (initial as unknown as Record<string, unknown>).assessment) {
+      setAnalysis(initial)
+    } else {
+      setAnalysis(null)
+    }
+  }, [initial, incidentId])
 
   async function run() {
     if (!incidentId) return
@@ -51,8 +61,8 @@ export function AIInsightPanel({
     <Card className="flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
         <h3 className="flex items-center gap-1.5 text-sm font-semibold">
-          <BrainCircuit className="h-4 w-4 text-[var(--chart-1)]" />
-          AI analyst copilot
+          <BrainCircuit className="h-4 w-4 text-[#00f0ff]" />
+          DFIR investigation copilot
         </h3>
         <div className="flex items-center gap-1.5">
           {analysis ? (
@@ -60,11 +70,11 @@ export function AIInsightPanel({
               variant="outline"
               className="gap-1 text-[9px]"
               style={{
-                borderColor: isFallback ? "var(--chart-2)" : "var(--chart-4)",
-                color: isFallback ? "var(--chart-2)" : "var(--chart-4)",
+                borderColor: isFallback ? "#ffb020" : "#00e5a3",
+                color: isFallback ? "#ffb020" : "#00e5a3",
               }}
             >
-              {isFallback ? "rule-engine fallback" : "ollama"}
+              {isFallback ? "Deterministic Fallback (Part 1)" : "Local LLM Copilot (Part 2)"}
             </Badge>
           ) : null}
           <Button size="sm" className="h-7 gap-1 text-xs" disabled={!incidentId || loading} onClick={run}>

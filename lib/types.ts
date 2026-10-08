@@ -110,6 +110,7 @@ export interface IncidentSummary {
   scenario_id: string
   finding_count: number
   created_at: string
+  source?: string
 }
 
 export interface TimelineEntry {
@@ -127,7 +128,7 @@ export interface IncidentDetail extends IncidentSummary {
   recommended_actions: RecommendedStep[]
   timeline: TimelineEntry[]
   graph: IncidentGraph
-  analysis: AiAnalysis
+  analysis?: AiAnalysis | null
 }
 
 export interface AiAnalysis {
@@ -159,6 +160,7 @@ export interface MetricsSummary {
   top_entities: { entity: string; risk: number }[]
   incident_status: Record<string, number>
   cross_site_campaigns: { incident_id: string; title: string; risk_score: number; sites: string[] }[]
+  provenance_breakdown: Record<string, Record<string, number>>
 }
 
 export interface ReplayResponse {
@@ -176,10 +178,11 @@ export interface SimulatedActionResponse {
   action_type: string
   target: string
   approval_state: string
-  approved_by: string | null
+  approved_by?: string | null
   policy_risk_class: string
   result: string
-  rollback: Record<string, unknown>
+  rollback_data: Record<string, unknown>
+  rollback?: Record<string, unknown>
   simulation_only: boolean
 }
 
@@ -187,4 +190,24 @@ export interface ConnectionState {
   mode: ConnectionMode
   online: boolean
   queued: number
+}
+
+// ── Blast Radius ──────────────────────────────────────────────────────────────
+
+export interface BlastRadiusContributingNode {
+  node: string
+  weight: number
+  distance: number
+  contribution: number
+}
+
+export interface BlastRadiusHostResult {
+  host: string
+  score: number
+  contributing_nodes: BlastRadiusContributingNode[]
+}
+
+export interface BlastRadiusResponse {
+  incident_id: string
+  hosts: BlastRadiusHostResult[]
 }

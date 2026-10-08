@@ -22,8 +22,13 @@ async def health(session: Session = Depends(get_session)) -> HealthResponse:
 
     ollama = await ollama_client.health()
     faiss_ok = retrieval.faiss_available()
+    
+    overall_status = "ok"
+    if db_ok == "error" or not ollama["available"]:
+        overall_status = "degraded"
+        
     return HealthResponse(
-        status="ok",
+        status=overall_status,
         ollama_available=ollama["available"],
         ollama_model=settings.ollama_model,
         database=db_ok,

@@ -109,6 +109,7 @@ export const incidentSummarySchema = z.object({
   scenario_id: z.string(),
   finding_count: z.number(),
   created_at: z.string(),
+  source: z.string().optional().default("demo"),
 })
 export const incidentListSchema = z.array(incidentSummarySchema)
 
@@ -141,7 +142,17 @@ export const incidentDetailSchema = incidentSummarySchema.extend({
   recommended_actions: z.array(recommendedStepSchema),
   timeline: z.array(timelineEntrySchema),
   graph: graphSchema,
-  analysis: aiAnalysisSchema,
+  analysis: z
+    .union([aiAnalysisSchema, z.record(z.string(), z.unknown())])
+    .nullable()
+    .optional()
+    .transform((v) => {
+      if (v && "assessment" in v && typeof (v as Record<string, unknown>).assessment === "string") {
+        const parsed = aiAnalysisSchema.safeParse(v)
+        if (parsed.success) return parsed.data
+      }
+      return null
+    }),
 })
 
 export const metricsSchema = z.object({
@@ -166,6 +177,7 @@ export const metricsSchema = z.object({
       sites: z.array(z.string()),
     }),
   ),
+  provenance_breakdown: z.record(z.string(), z.record(z.string(), z.number())).optional().default({}),
 })
 
 export const replaySchema = z.object({
@@ -183,9 +195,30 @@ export const simulatedActionSchema = z.object({
   action_type: z.string(),
   target: z.string(),
   approval_state: z.string(),
-  approved_by: z.string().nullable(),
+  approved_by: z.string().nullable().optional(),
   policy_risk_class: z.string(),
   result: z.string(),
-  rollback: z.record(z.string(), z.unknown()),
+  rollback_data: z.record(z.string(), z.unknown()).optional().default({}),
+  rollback: z.record(z.string(), z.unknown()).optional(),
   simulation_only: z.boolean(),
+})
+
+// ── Blast Radius ──────────────────────────────────────────────────────────────
+
+export const blastRadiusContributingNodeSchema = z.object({
+  node: z.string(),
+  weight: z.number(),
+  distance: z.number(),
+  contribution: z.number(),
+})
+
+export const blastRadiusHostSchema = z.object({
+  host: z.string(),
+  score: z.number(),
+  contributing_nodes: z.array(blastRadiusContributingNodeSchema),
+})
+
+export const blastRadiusSchema = z.object({
+  incident_id: z.string(),
+  hosts: z.array(blastRadiusHostSchema),
 })

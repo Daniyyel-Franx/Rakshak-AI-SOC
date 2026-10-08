@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, delete
+from sqlmodel import Session, delete, select
 
 from ..database import get_session
 from ..models import Action, AuditEvent, Event, Finding, Incident, ReplayRun
@@ -27,14 +27,14 @@ def replay(scenario_id: str, session: Session = Depends(get_session)) -> ReplayR
 
     run_id = f"RUN-{uuid.uuid4().hex[:10]}"
     if scenario_engine.is_campaign(scenario_id):
-        res = pipeline.correlate_campaign(session, events, scenario_id)
+        res = pipeline.correlate_campaign(session, events, scenario_id, source="demo")
     else:
-        res = pipeline.ingest_events(session, events, scenario_id=scenario_id, source="live")
+        res = pipeline.ingest_events(session, events, scenario_id=scenario_id, source="demo")
 
     session.add(ReplayRun(
         run_id=run_id, scenario_id=scenario_id,
         status="queued" if res.get("queued") else "completed",
-        queued=res.get("queued", False), replayed=True,
+        queued=res.get("queued", False), replayed=not res.get("queued", False),
         event_count=res.get("ingested", 0), duplicate_count=res.get("duplicates", 0),
     ))
     session.commit()
@@ -67,7 +67,18 @@ def link_status() -> dict:
 
 @router.post("/scenarios/clear")
 def clear_demo(session: Session = Depends(get_session)) -> dict:
-    for model in (Action, Incident, Finding, Event, ReplayRun, AuditEvent):
-        session.exec(delete(model))
+    demo_incidents = session.exec(select(Incident).where(Incident.source == "demo")).all()
+    demo_inc_ids = [i.incident_id for i in demo_incidents]
+    if demo_inc_ids:
+        session.exec(delete(Action).where(Action.incident_id.in_(demo_inc_ids)))
+    session.exec(delete(Incident).where(Incident.source == "demo"))
+    session.exec(delete(Event).where(Event.source == "demo"))
+    session.exec(delete(ReplayRun))
+    live_incidents = session.exec(select(Incident).where(Incident.source == "live")).all()
+    if not live_incidents:
+        session.exec(delete(Action))
+        session.exec(delete(Finding))
+        session.exec(delete(AuditEvent))
     session.commit()
+    pipeline.reset_link()
     return {"status": "cleared"}

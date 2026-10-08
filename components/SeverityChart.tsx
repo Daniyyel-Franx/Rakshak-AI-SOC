@@ -13,24 +13,15 @@ import {
 } from "recharts"
 import { Card } from "@/components/ui/card"
 import { useMetrics } from "@/lib/hooks"
-import { fmtTime } from "@/lib/ui"
+import { fmtTime, severityColor } from "@/lib/ui"
 import type { MetricsSummary } from "@/lib/types"
 
-const SEV_ID_COLOR: Record<string, string> = {
-  "1": "var(--chart-4)",
-  "2": "var(--chart-4)",
-  "3": "var(--chart-2)",
-  "4": "var(--chart-3)",
-  "5": "var(--destructive)",
-  "6": "var(--destructive)",
-}
-const SEV_ID_NAME: Record<string, string> = {
-  "1": "info",
-  "2": "low",
-  "3": "medium",
-  "4": "high",
-  "5": "critical",
-  "6": "fatal",
+const SEV_ORDER: Record<string, number> = {
+  info: 0,
+  low: 1,
+  medium: 2,
+  high: 3,
+  critical: 4,
 }
 const RISK_COLOR = ["var(--chart-4)", "var(--chart-4)", "var(--chart-2)", "var(--chart-2)", "var(--chart-3)", "var(--chart-3)", "var(--chart-3)", "var(--destructive)", "var(--destructive)", "var(--destructive)"]
 
@@ -67,12 +58,21 @@ export function SeverityChart({ metrics }: { metrics?: MetricsSummary }) {
   if (!m) return <ChartCard title="Severity distribution"><EmptyChart label="Loading…" /></ChartCard>
 
   const sevData = Object.entries(m.severity_counts)
-    .map(([id, count]) => ({ id, name: SEV_ID_NAME[id] ?? id, count }))
-    .sort((a, b) => Number(a.id) - Number(b.id))
-  const rateData = m.event_rate_timeseries.map((p) => ({ ...p, t: fmtTime(p.minute + ":00") }))
+    .map(([sev, count]) => ({
+      id: sev,
+      name: sev,
+      count: Number(count),
+      order: SEV_ORDER[sev.toLowerCase()] ?? 99,
+      color: severityColor(sev),
+    }))
+    .sort((a, b) => a.order - b.order)
+  const rateData = m.event_rate_timeseries.map((p: { minute: string; count: number }) => ({
+    ...p,
+    t: fmtTime(p.minute + ":00"),
+  }))
 
-  const hasSev = sevData.some((d) => d.count > 0)
-  const hasRate = rateData.some((d) => d.count > 0)
+  const hasSev = sevData.some((d: { count: number }) => d.count > 0)
+  const hasRate = rateData.some((d: { count: number }) => d.count > 0)
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -106,7 +106,7 @@ export function SeverityChart({ metrics }: { metrics?: MetricsSummary }) {
               <Tooltip contentStyle={tooltipStyle()} cursor={{ fill: "var(--accent)" }} />
               <Bar dataKey="count" radius={[3, 3, 0, 0]}>
                 {sevData.map((d) => (
-                  <Cell key={d.id} fill={SEV_ID_COLOR[d.id] ?? "var(--chart-5)"} />
+                  <Cell key={d.name} fill={d.color} />
                 ))}
               </Bar>
             </BarChart>
@@ -124,7 +124,7 @@ export function RiskHistogram({ metrics }: { metrics?: MetricsSummary }) {
   const m = metrics ?? swr.data
   if (!m) return <ChartCard title="Risk distribution"><EmptyChart label="Loading…" /></ChartCard>
   const data = m.risk_distribution
-  const has = data.some((d) => d.count > 0)
+  const has = data.some((d: { count: number }) => d.count > 0)
   return (
     <ChartCard title="Risk score histogram">
       {has ? (
@@ -134,7 +134,7 @@ export function RiskHistogram({ metrics }: { metrics?: MetricsSummary }) {
             <YAxis tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} allowDecimals={false} width={28} />
             <Tooltip contentStyle={tooltipStyle()} cursor={{ fill: "var(--accent)" }} />
             <Bar dataKey="count" radius={[3, 3, 0, 0]}>
-              {data.map((d, i) => (
+              {data.map((d: { bucket: string; count: number }, i: number) => (
                 <Cell key={d.bucket} fill={RISK_COLOR[i] ?? "var(--chart-5)"} />
               ))}
             </Bar>

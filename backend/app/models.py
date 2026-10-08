@@ -40,6 +40,7 @@ class Event(SQLModel, table=True):
     classification: str = "unclassified"
     fingerprint: str = Field(index=True)
     priority: int = 1
+    source: str = Field(default="demo", index=True)
     created_at: str = Field(default_factory=_now)
 
 
@@ -92,6 +93,7 @@ class Incident(SQLModel, table=True):
     recommended_actions_json: list[dict[str, Any]] = Field(default_factory=list, sa_column=Column(JSON))
     analysis_json: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     scenario_id: str = Field(default="", index=True)
+    source: str = Field(default="demo", index=True)
     created_at: str = Field(default_factory=_now)
     updated_at: str = Field(default_factory=_now)
 

@@ -71,6 +71,7 @@ def simulate(req: SimulateActionRequest, session: Session = Depends(get_session)
     return SimulateActionResponse(
         action_id=action.action_id, incident_id=req.incident_id, action_type=req.action_type,
         target=req.target, policy_risk_class=risk_class, approval_state=approval_state,
+        approved_by=action.approved_by,
         result=action.result, rollback_data=rollback_data, simulation_only=True,
     )
 
