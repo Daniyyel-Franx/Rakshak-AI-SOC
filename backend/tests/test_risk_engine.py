@@ -37,9 +37,10 @@ def test_insider_scenario_is_elevated():
 def test_benign_scenario_downgraded():
     ev = scenario_engine.build_events("SCENARIO_4_BENIGN_MAINTENANCE")
     res = risk_engine.evaluate(ev, "SCENARIO_4_BENIGN_MAINTENANCE")
-    # authorised maintenance => low anomaly, no incident
+    # authorised maintenance => low anomaly, informational incident created
     assert res["anomaly_score"] < 0.3
-    assert res["incident"] is None
+    assert res["incident"] is not None
+    assert res["incident"]["risk_score"] <= 15.0
 
 
 def test_findings_cite_evidence():

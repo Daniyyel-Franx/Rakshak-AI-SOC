@@ -355,12 +355,27 @@ export function LogIngestionModal({ open, onClose, onSelectIncident }: LogIngest
 
           {/* Result Card */}
           {result && (
-            <div className="rounded border border-[rgba(0,229,163,0.3)] bg-[rgba(0,229,163,0.06)] p-3 space-y-2">
+            <div className={`rounded border p-3 space-y-2 ${
+              result.status === "error" ? "border-[rgba(255,0,85,0.4)] bg-[rgba(255,0,85,0.06)]"
+              : result.ingested === 0 && result.duplicates > 0 ? "border-[rgba(255,176,32,0.4)] bg-[rgba(255,176,32,0.06)]"
+              : "border-[rgba(0,229,163,0.3)] bg-[rgba(0,229,163,0.06)]"
+            }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#00e5a3]" />
-                  <span className="font-mono text-xs font-semibold text-[#00e5a3]">
-                    INGESTION SUCCESSFUL (source=&quot;live&quot;)
+                  {result.status === "error" ? (
+                    <AlertCircle className="h-4 w-4 text-[#ff0055]" />
+                  ) : (
+                    <CheckCircle2 className={`h-4 w-4 ${result.ingested === 0 ? "text-[#ffb020]" : "text-[#00e5a3]"}`} />
+                  )}
+                  <span className={`font-mono text-xs font-semibold ${
+                    result.status === "error" ? "text-[#ff0055]" 
+                    : result.ingested === 0 ? "text-[#ffb020]" 
+                    : "text-[#00e5a3]"
+                  }`}>
+                    {result.status === "error" ? "INGESTION FAILED"
+                      : result.ingested > 0 && result.errors.length > 0 ? "COMPLETED WITH ERRORS / PARTIAL"
+                      : result.ingested > 0 ? "COMPLETED - SUCCESSFUL"
+                      : "COMPLETED - NO NEW EVENTS"} (source=&quot;live&quot;)
                   </span>
                 </div>
                 <Badge
@@ -402,7 +417,9 @@ export function LogIngestionModal({ open, onClose, onSelectIncident }: LogIngest
                     }}
                     className="w-full h-7 font-mono text-[11px] bg-[rgba(0,240,255,0.2)] text-[#00f0ff] border border-[rgba(0,240,255,0.4)] hover:bg-[rgba(0,240,255,0.3)]"
                   >
-                    <span>OPEN GENERATED INCIDENT ({result.incident_id})</span>
+                    <span>
+                      {result.ingested > 0 ? "OPEN GENERATED INCIDENT" : "OPEN ASSOCIATED INCIDENT"} ({result.incident_id})
+                    </span>
                     <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                   </Button>
                 </div>

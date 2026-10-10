@@ -76,13 +76,13 @@ export function runForceLayout(
     }))
 
   const sim = forceSimulation<D3Node>(d3Nodes)
-    .force("charge", forceManyBody<D3Node>().strength(-220))
+    .force("charge", forceManyBody<D3Node>().strength(-800))
     .force(
       "link",
-      forceLink<D3Node, D3Link>(d3Links).distance(160).strength(0.7),
+      forceLink<D3Node, D3Link>(d3Links).distance(250).strength(0.8),
     )
     .force("center", forceCenter(width / 2, height / 2))
-    .force("collide", forceCollide<D3Node>(60))
+    .force("collide", forceCollide<D3Node>(100))
     .stop()
 
   // Run to approximate convergence (alpha ≈ 0)

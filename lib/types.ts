@@ -170,6 +170,7 @@ export interface ReplayResponse {
   events_ingested: number
   duplicates_skipped: number
   incident_id: string | null
+  queued?: boolean
 }
 
 export interface SimulatedActionResponse {
@@ -201,10 +202,19 @@ export interface BlastRadiusContributingNode {
   contribution: number
 }
 
+export interface BlastRadiusTopologyEdge {
+  source: string
+  target: string
+  trust_type?: string
+}
+
 export interface BlastRadiusHostResult {
   host: string
+  canonical_host?: string
   score: number
   contributing_nodes: BlastRadiusContributingNode[]
+  topology_edges?: BlastRadiusTopologyEdge[]
+  error?: string
 }
 
 export interface BlastRadiusResponse {

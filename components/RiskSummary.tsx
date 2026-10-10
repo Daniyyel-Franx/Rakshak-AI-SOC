@@ -119,7 +119,7 @@ export function RiskSummary() {
         icon={AlertTriangle}
         tone={m.active_incidents > 0 ? "medium" : "muted"}
         badge={m.active_incidents > 0 ? "ALERT" : "STABLE"}
-        hint={critCount > 0 ? `${critCount} Critical` : "Nominal"}
+        hint={m.active_incidents > 0 ? "Triage Queue" : "Nominal"}
       />
       <StatCard
         label="Critical Breaches"
@@ -127,7 +127,7 @@ export function RiskSummary() {
         icon={ShieldAlert}
         tone={critCount > 0 ? "critical" : "muted"}
         badge={critCount > 0 ? "SEV-1" : "CLEAR"}
-        hint="Host Containment"
+        hint="High Impact Assets"
       />
       <StatCard
         label="Global Risk Index"

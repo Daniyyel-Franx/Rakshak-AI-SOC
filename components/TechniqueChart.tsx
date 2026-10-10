@@ -56,7 +56,12 @@ export function TechniqueChart({ metrics }: { metrics?: MetricsSummary }) {
                 axisLine={false}
                 width={72}
               />
-              <Tooltip contentStyle={tooltipStyle()} cursor={{ fill: "var(--accent)" }} />
+              <Tooltip 
+                contentStyle={tooltipStyle()} 
+                itemStyle={{ color: "#e1e2ec" }} 
+                labelStyle={{ color: "#849495" }} 
+                cursor={{ fill: "var(--accent)" }} 
+              />
               <Bar dataKey="count" radius={[0, 3, 3, 0]}>
                 {data.map((d) => (
                   <Cell key={d.id} fill="var(--chart-1)" />

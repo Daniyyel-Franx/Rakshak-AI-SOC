@@ -41,7 +41,7 @@ export function AIInsightPanel({
       // Defensive: validate structured output before rendering.
       setAnalysis(aiAnalysisSchema.parse(res))
     } catch {
-      setError("AI analysis failed validation or the request errored. No result shown.")
+      setError("Deterministic analysis failed validation or the request errored. No result shown.")
     } finally {
       setLoading(false)
     }
@@ -62,7 +62,7 @@ export function AIInsightPanel({
       <div className="flex items-center justify-between gap-2">
         <h3 className="flex items-center gap-1.5 text-sm font-semibold">
           <BrainCircuit className="h-4 w-4 text-[#00f0ff]" />
-          DFIR investigation copilot
+          Deterministic investigation analysis
         </h3>
         <div className="flex items-center gap-1.5">
           {analysis ? (
@@ -70,16 +70,16 @@ export function AIInsightPanel({
               variant="outline"
               className="gap-1 text-[9px]"
               style={{
-                borderColor: isFallback ? "#ffb020" : "#00e5a3",
-                color: isFallback ? "#ffb020" : "#00e5a3",
+                borderColor: isFallback ? "#00e5a3" : "#ffb020",
+                color: isFallback ? "#00e5a3" : "#ffb020",
               }}
             >
-              {isFallback ? "Deterministic Fallback (Part 1)" : "Local LLM Copilot (Part 2)"}
+              {isFallback ? "DETERMINISTIC ANALYSIS (PART 1)" : "LOCAL LLM: PART 2 (DISABLED)"}
             </Badge>
           ) : null}
           <Button size="sm" className="h-7 gap-1 text-xs" disabled={!incidentId || loading} onClick={run}>
             <Sparkles className="h-3.5 w-3.5" />
-            {loading ? "Analysing…" : analysis ? "Re-run" : "Generate AI insight"}
+            {loading ? "Analysing…" : analysis ? "Re-run" : "Generate deterministic insight"}
           </Button>
         </div>
       </div>
@@ -95,7 +95,7 @@ export function AIInsightPanel({
         </div>
       ) : !analysis ? (
         <p className="py-6 text-center text-xs text-muted-foreground">
-          No analysis yet. Detection is done by the deterministic engine; the copilot only
+          No analysis yet. Detection is done by the deterministic engine; this panel only
           summarises grounded evidence.
         </p>
       ) : (

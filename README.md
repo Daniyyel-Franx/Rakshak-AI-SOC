@@ -1,551 +1,172 @@
 # Rakshak-AI
 
+**DFIR-Based Attack Chain Reconstruction and Dynamic Blast-Radius Assessment Using Graph Analysis and Local LLMs**
 
-## DFIR-Based Attack Chain Reconstruction and Dynamic Blast-Radius Assessment Using Graph Analysis and Local LLMs
+Rakshak-AI is a local-first cybersecurity and Digital Forensics and Incident Response (DFIR) platform designed to reconstruct attack chains from forensic telemetry, correlate evidence, visualize incidents as deterministic graphs, and dynamically assess the potential blast radius of a compromised asset.
 
-Rakshak-AI is a local-first cybersecurity and Digital Forensics and Incident Response (DFIR) platform designed to reconstruct attack chains from forensic telemetry, correlate evidence, visualize incidents as graphs, and dynamically assess the potential blast radius of a compromised asset.
+## 1. Project Overview
+Rakshak-AI provides security analysts with a powerful, deterministic pipeline to ingest logs, extract meaningful events, and map them to known MITRE ATT&CK techniques. It builds relational graphs of incidents, enabling visual comprehension of complex attack paths and the subsequent topological exposure of infrastructure.
 
-## Contents
+## 2. Problem Statement / Motivation
+Modern DFIR requires correlating disparate forensic logs into a coherent narrative. Manual correlation is slow and prone to missing latent relationships, while traditional SIEM tools often produce alert fatigue without context. There is a need for a local, privacy-preserving tool that translates raw evidence directly into causal attack graphs and impact assessments.
 
-- [Project Status](#project-status)
-- [Core Architecture](#core-architecture)
-- [Technology Stack](#technology-stack)
-- [Setup and Usage](#setup-and-usage)
-- [Workspaces and Analysis](#workspaces-and-analysis)
-- [Testing and Verification](#testing-and-verification)
-- [Security and Persistence](#security-and-persistence)
+## 3. Core Objective
+To deterministically process forensic telemetry into actionable, structured incident graphs that immediately communicate how an asset was compromised (attack chain) and what else is at risk (blast radius), paving the way for AI-assisted response.
 
+## 4. Part 1 vs Part 2
+**Part 1 (Current State):** A fully operational deterministic DFIR pipeline. It handles log ingestion, normalization, Sigma/MITRE detection, graph construction, and dynamic visualization. 
+**Part 2 (Planned State):** An integration of local LLMs (Ollama) to provide natural-language insights, automated investigation reports, and context-aware mitigation recommendations without sending data to the cloud.
 
-The project is being developed in two major parts.
+## 5. Technical Architecture
+The system consists of a backend data processing engine that feeds a highly interactive frontend workspace. Data flows linearly from ingestion to graph representation.
 
----
+## 6. Data Flow
+Raw forensic telemetry → Parser-specific extraction → Normalization (OCSF alignment) → Detection (Sigma/MITRE mapping) → Evidence correlation → Incident reconstruction → Attack-chain graph → Blast-radius assessment → Analyst investigation workspace.
 
-## Project Status
+## 7. Technology Stack
+### Backend
+- Python 3.11
+- FastAPI
+- Uvicorn
+- SQLModel
+- SQLite
+- NetworkX
+- pySigma
+- Pydantic
 
-### Part 1 — Deterministic DFIR Pipeline
+### Frontend
+- Next.js
+- React
+- TypeScript
+- React Flow
 
-**Part 1 is the currently implemented stage of the project.**
-
-The current system focuses on deterministic and explainable processing of forensic telemetry:
-
-- Raw forensic log ingestion
-- Parser-specific event extraction
-- Event normalization
-- OCSF-aligned event representation
-- Suspicious event detection
-- Sigma/MITRE ATT&CK-aligned analysis
+### Security / DFIR Methodologies
+- OCSF-aligned normalization
+- Sigma-based detection
+- MITRE ATT&CK mapping
 - Evidence correlation
 - Incident reconstruction
-- Attack-chain / compromise graph generation
-- Graph-based blast-radius assessment
-- Incident triage and investigation
-- Demo and live data provenance separation
-- Offline link-loss and replay handling
-- Local SQLite persistence
-- Metrics and analytical views
+- Graph traversal
+- Weighted graph analysis
+- Dynamic blast-radius assessment
 
-Part 1 is designed to work without requiring a Large Language Model.
+## 8. Design Methodologies
+The architecture strictly isolates deterministic data processing from subjective analysis. This ensures that the foundational graph is mathematically verifiable and strictly evidence-backed before any AI or human interpretation is applied.
 
-The current investigation/copilot functionality is deterministic and does not represent a production AI/LLM system.
+## 9. Detection Methodology
+Detection relies on pySigma for evaluating normalized logs against industry-standard Sigma rules. This maps suspicious activity directly to MITRE ATT&CK techniques, providing a standardized vocabulary for threat behaviors.
 
-### Part 2 — Local AI Investigation
+## 10. Evidence Correlation Methodology
+Correlation temporally and semantically links disjointed events. If an attacker logs in via SSH (event A) and spawns a malicious process (event B), the system identifies shared entities (e.g., source IP, user, target host) to join them into a single incident.
 
-**Part 2 will be implemented later.**
+## 11. Attack-Chain Reconstruction Methodology
+Incident reconstruction takes grouped events and builds a causal chain (DAG). It represents exactly how a threat actor moved through the environment, translating individual log lines into a continuous narrative.
 
-The planned Part 2 will introduce local LLM capabilities using Ollama.
+## 12. Graph Analysis Methodology
+Using NetworkX on the backend and React Flow on the frontend, the platform models entities as nodes and evidence as edges. This visual representation instantly highlights choke points, root causes, and primary vectors of compromise.
 
-Planned capabilities include:
+## 13. Blast-Radius Methodology & Limitations
+Blast-radius analysis estimates potential impact by evaluating the topological proximity of high-value assets to a confirmed compromised host $h$.
 
-- AI-assisted incident investigation
-- Evidence summarization
-- Attack-chain explanation
-- Contextual interpretation of forensic evidence
-- Analyst-oriented investigation assistance
-- Investigation report generation
-- Recommended next steps
-- Natural-language interaction with reconstructed incidents
+### Mathematical Formula
+$$BlastRadius(h) = \sum_{n \in Reachable(h)} w(n) \cdot \frac{1}{1 + d_{min}(h, n)}$$
 
-Ollama is therefore **not required for Part 1**.
+- **$h$**: Confirmed compromised host identified from the causal incident graph.
+- **$Reachable(h)$**: Assets reachable within a cutoff of 4 hops via the separate environmental trust/topology graph (SSH keys, AD group memberships, SMB shares).
+- **$w(n)$**: Asset criticality weight ($1$ to $5$, where $5$ represents crown-jewel assets such as databases and SCADA historians).
+- **$d_{min}(h, n)$**: Shortest-path hop distance computed via NetworkX `single_source_shortest_path_length(G, h, cutoff=4)`. The compromised host itself ($d=0$) is excluded to avoid double-counting.
 
----
+### Target Canonicalization & Alias Normalization
+Raw telemetry and forensic log sources often refer to infrastructure via diverse identifiers (e.g., Linux auditd logs using `target-linux-01`, syslog using `edge-fw-01`, or FQDNs). Rakshak-AI deterministically canonicalizes host identifiers against the environmental trust topology prior to graph traversal.
 
-# Core Architecture
+### Material Limitations
+1. **Trust Topology vs. Attack Chain:** The blast-radius calculation uses the separate infrastructure trust topology (credentials, network trusts), not the causal attack chain. Evidence of compromise on host $A$ does not prove that an attacker has already reached host $B$.
+2. **Path Multiplicity:** Path multiplicity weighting (accounting for multiple redundant trust paths between assets) is currently out of scope and documented as future work.
+3. **Unmapped / Isolated Assets:** If an asset is not registered in the environmental topology or has zero outbound trust edges, Rakshak-AI returns an explicit descriptive status (`Target host is not mapped to the configured topology` or `Target exists in topology but has no evidence-backed reachable nodes`), never fabricating artificial connections.
 
-```text
-                   RAW FORENSIC LOGS
-                           |
-                           v
-                       PARSERS
-                           |
-                           v
-                NORMALIZATION / OCSF
-                           |
-                           v
-             DETECTION / SIGMA / MITRE
-                           |
-                           v
-                  EVIDENCE CORRELATION
-                           |
-                           v
-                 INCIDENT RECONSTRUCTION
-                           |
-                  +--------+--------+
-                  |                 |
-                  v                 v
-           INCIDENT GRAPH      BLAST-RADIUS
-                  |              ANALYSIS
-                  |                 |
-                  +--------+--------+
-                           |
-                           v
-                        FASTAPI
-                           |
-                           v
-                     NEXT.JS UI
+## 14. Frontend Architecture
+The Next.js frontend delivers a set of specialized DFIR workspaces. It relies heavily on local state and React Flow for complex data visualization, presenting technical information in a clean, high-contrast, dark-mode environment.
 
+## 15. Backend Architecture
+The FastAPI backend serves as the deterministic engine. It handles database transactions, executes parsing and normalization pipelines, runs the detection engine, calculates graph topologies, and exposes a RESTful API.
 
-Technology Stack
-### Backend
-Python 3.11
-FastAPI
-Uvicorn
-SQLModel
-SQLite
-NetworkX
-pySigma
-Pydantic
-### Frontend
-Next.js
-React
-TypeScript
-React Flow
-npm
-### Security / Detection / Analysis Concepts
-OCSF-aligned event normalization
-Sigma-based detection concepts
-MITRE ATT&CK technique mapping
-Evidence correlation
-Incident reconstruction
-Graph traversal
-BFS / DFS concepts
-Weighted graph analysis
-Blast-radius scoring
+## 16. Data Provenance / Demo vs Live
+Rakshak-AI strictly isolates data origins. "Demo" telemetry allows for safe, repeatable testing of complex scenarios (e.g., coordinated campaigns), while "Live" telemetry represents actively ingested forensic logs. The two data sources never silently contaminate each other.
 
-Rakshak/
-|
-+-- app/
-|   +-- incidents/
-|   +-- ...
-|
-+-- backend/
-|   +-- app/
-|   |   +-- routes/
-|   |   +-- services/
-|   |   +-- models.py
-|   |   +-- schemas.py
-|   |   +-- database.py
-|   |   +-- main.py
-|   |
-|   +-- tests/
-|   +-- requirements.txt
-|   +-- rakshak.db
-|
-+-- components/
-|   +-- DashboardShell.tsx
-|   +-- AttackPathGraph.tsx
-|   +-- BlastRadiusNetworkView.tsx
-|   +-- BlastRadiusReadout.tsx
-|   +-- LogIngestionModal.tsx
-|   +-- ScenarioControls.tsx
-|   +-- ...
-|
-+-- lib/
-|   +-- api.ts
-|   +-- types.ts
-|   +-- validation.ts
-|   +-- forceLayout.ts
-|   +-- ...
-|
-+-- package.json
-+-- package-lock.json
-+-- README.md
-+-- .gitignore
+## 17. Offline Replay / Link-Loss Workflow
+To guarantee reliability in unstable network conditions, the frontend can queue events offline and deterministically replay them when the connection is restored, ensuring zero data loss during critical DFIR operations.
 
-## Setup and Usage
+## 18. Log Ingestion
+The local telemetry pipeline allows analysts to ingest raw sysmon, auditd, or other forensic logs directly via the UI. The pipeline detects duplicates, handles partial errors, and correlates new data into existing incidents in real-time.
 
-### Prerequisites
-Install the following before running the project:
+## 19. Project Structure
+- `backend/`: FastAPI application, Python dependencies, SQLModel schemas, detection engine, SQLite database.
+- `components/`: React UI components, workspaces, React Flow implementations.
+- `lib/`: TypeScript utilities, API clients, schema definitions.
+- `app/`: Next.js routing and page layouts.
 
-Python 3.11
-Node.js
-npm
-Git
+## 20. Installation Prerequisites
+- Python 3.11
+- Node.js
+- npm
+- Git
 
-Part 1 does not require Ollama.
-
-### Backend Setup
-Open PowerShell in the project directory.
-
-cd backend
-py -3.11 -m pip install -r requirements.txt
-cd ..
-
-A Python virtual environment is recommended.
-
+## 21. Backend Setup
+```powershell
 cd backend
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 py -3.11 -m pip install -r requirements.txt
-cd ..
-### Frontend Setup
-From the project root:
+```
 
+## 22. Frontend Setup
+```powershell
 npm install
+```
 
-package-lock.json should remain in version control so that frontend dependencies can be reproduced consistently.
+## 23. start.bat Usage
+You can launch the entire application seamlessly using the root-level `start.bat` convenience launcher.
+```powershell
+.\start.bat
+```
+The launcher will automatically verify prerequisites, activate the Python environment, start the backend and frontend in separate persistent windows, and open the browser once the UI is ready.
 
-### Running the Project
-Rakshak-AI currently uses two local development processes.
-#### 1. Start the Backend
-Open a PowerShell terminal:
-
-cd "D:\Hackathon PS projects\Rakshak\backend"
+## 24. Manual Startup
+If preferred, start the backend manually:
+```powershell
+cd backend
 py -3.11 -m uvicorn app.main:app --reload --port 8000
-
-The backend will be available at:
-
-http://localhost:8000
-#### 2. Start the Frontend
-Open a second PowerShell terminal:
-
-cd "D:\Hackathon PS projects\Rakshak"
+```
+And start the frontend in a new terminal:
+```powershell
 npm run dev
+```
 
-The frontend will be available at:
+## 25. API / Service Overview
+The RESTful backend exposes endpoints for metrics gathering, log ingestion, incident querying, offline replay synchronization, graph layout generation, and dynamic blast-radius calculation.
 
-http://localhost:3000
-
-Open the application in a browser:
-
-http://localhost:3000
-### Quick Start
-A root-level start.bat convenience launcher is intended to automate the local startup process.
-
-The launcher will start:
-
-FastAPI backend
-Next.js frontend
-Local browser
-
-The launcher should use paths relative to the project directory and must not depend on a specific developer machine path.
-
-Until start.bat is present, use the manual commands above.
-
-## Workspaces and Analysis
-
-### Main Tactical Workspaces
-Rakshak-AI currently provides four main tactical workspaces.
-#### 1. Overview / Triage
-Provides a high-level operational view of:
-
-Total events
-Active incidents
-Severity
-Risk indicators
-Triage queue
-Scenario controls
-Campaign correlation
-Telemetry status
-#### 2. Incident Investigation
-Provides detailed investigation of a selected incident:
-
-Reconstructed attack path
-Incident graph
-Evidence relationships
-Timeline
-Deterministic investigation analysis
-Response-action simulation
-Incident evidence references
-#### 3. Topology / Blast Radius
-Provides dynamic blast-radius assessment for a compromised target:
-
-Target host selection
-Surrounding topology
-Impact categories
-Contributing nodes
-Weighted impact values
-Blast-radius score
-Visual containment / impact zone
-
-The blast-radius contribution score represents analytical impact and must not be confused with an actual evidence-backed network relationship.
-#### 4. Metrics & Analytics
-Provides analytical views such as:
-
-Live telemetry
-Event distribution
-ATT&CK technique distribution
-High-risk entities
-Analytical summaries
-### Scenario / Demo System
-The project contains deterministic demo scenarios for testing and presentation.
-
-Scenarios are used to demonstrate:
-
-Attack-chain reconstruction
-Incident creation
-Graph generation
-Blast-radius analysis
-Cross-site correlation
-Replay behavior
-Link-loss behavior
-
-Demo data and live data are required to remain provenance-aware and must not silently overwrite each other.
-
-### Live Log Ingestion
-Part 1 includes a local forensic log ingestion pipeline.
-
-The general flow is:
-
-Raw Log
-   |
-   v
-Parser
-   |
-   v
-Normalization
-   |
-   v
-Detection
-   |
-   v
-Deduplication
-   |
-   v
-Correlation
-   |
-   v
-Incident / Graph Update
-
-The current implementation includes parser-specific support for the forensic telemetry formats implemented in the backend.
-
-Examples include:
-
-Windows Sysmon-style event input
-Linux auditd EXECVE-style input
-Supported raw JSON/XML/text telemetry
-
-The ingestion interface allows raw telemetry to be pasted or uploaded depending on the supported parser implementation.
-
-Native EVTX parsing should not be assumed unless an EVTX parser is explicitly implemented.
-
-### Ingestion Provenance
-Rakshak-AI distinguishes between:
-
-demo
-live
-
-Demo telemetry is used for deterministic scenarios and demonstrations.
-
-Live telemetry is processed through the live ingestion pipeline.
-
-The system should preserve provenance through:
-
-ingestion
-   ->
-events
-   ->
-incidents
-   ->
-correlation
-   ->
-graphs
-
-Live and demo data should not silently contaminate each other.
-
-### Offline / Link-Loss Mode
-The application contains a local replay flow intended to simulate loss of connectivity between the frontend and backend.
-
-The flow supports:
-
-Link Loss
-    |
-    v
-Offline Queue
-    |
-    v
-Replay / Restore
-    |
-    v
-Backend Processing
-
-The purpose is to demonstrate that queued telemetry can be restored without silently losing or duplicating events.
-
-### Incident Graph
-Incident graphs reconstruct relationships between forensic entities involved in an attack.
-
-Example semantic node categories may include:
-
-Attacker
-Host
-User / Process
-Payload
-Decoy
-Site or environment context
-
-The graph represents evidence-backed relationships and should not invent relationships solely for visualization.
-
-### Blast-Radius Analysis
-Blast-radius assessment evaluates the potential impact of a compromised node using graph structure and weighted contributing nodes.
-
-Conceptually:
-
-Compromised Node
-      |
-      +---- Neighbor / Asset
-      |
-      +---- Infrastructure Dependency
-      |
-      +---- High-Value System
-      |
-      +---- Remote / Cross-Site Relationship
-
-The visual blast zone is an analytical representation of potential impact.
-
-A node contributing to a blast-radius score does not automatically mean that a direct network relationship exists between that node and the compromised system.
-
-### Deterministic Investigation
-Part 1 investigation is deterministic.
-
-The current system can provide:
-
-Incident reconstruction
-Evidence correlation
-Attack-path visualization
-ATT&CK-aligned interpretation
-Blast-radius scoring
-Deterministic investigation summaries
-
-This should not be interpreted as an LLM-generated investigation.
-
-The local LLM layer belongs to Part 2.
-
-### Part 2 — Planned AI Layer
-The planned Part 2 architecture is:
-
-Reconstructed Incident
-        |
-        v
-Relevant Evidence
-        |
-        v
-Retrieval / Context
-        |
-        v
-Local Ollama Model
-        |
-        v
-Investigation / Report
-
-The future AI layer is intended to remain local-first and should not require sending forensic data to an external hosted AI service.
-
-## Testing and Verification
-
-### Testing
-### Backend Tests
-From the backend directory:
-
+## 26. Testing
+Backend tests ensure pipeline integrity:
+```powershell
 cd backend
 pytest
-cd ..
-### Frontend TypeScript Check
-From the project root:
-
+```
+Frontend validation ensures type safety and build correctness:
+```powershell
 npx tsc --noEmit
-### Production Build
-From the project root:
-
 npm run build
-### Development Verification
-Before considering a change complete, the following flows should be checked:
+```
 
-Application startup
-Overview page
-Incident Investigation page
-Topology / Blast Radius page
-Metrics / Analytics page
-Demo replay
-Campaign replay
-Link-loss simulation
-Restore link
-Clear demo data
-Open Full Incident
-Live log ingestion
-Duplicate ingestion handling
-Incident graph rendering
-Blast-radius rendering
-Browser console
-Backend API errors
-Database persistence
+## 27. Security / Development Considerations
+This is a local-first application designed for safe forensic analysis. The SQLite database is excluded from version control to prevent exposing sensitive telemetry. Standard security practices apply: do not commit `.env` secrets or raw forensic data to the repository.
 
-## Security and Persistence
+## 28. Current Part 1 Capabilities
+- Full deterministic analysis pipeline
+- Four tactical DFIR workspaces (Overview, Investigation, Topology, Analytics)
+- Attack-chain graph visualization
+- Force-directed blast-radius topology
+- Local offline queuing and restoration
+- Demo scenario replay and live log ingestion
 
-### Local Database
-Rakshak-AI uses SQLite for local persistence.
-
-The runtime database is:
-
-backend/rakshak.db
-
-This database is intentionally excluded from version control.
-
-A developer should allow the application to create or migrate its local database as required.
-
-The database should never contain production credentials or real confidential forensic data in a public repository.
-
-### Security Notes
-This project is intended for local development, demonstration, and controlled testing.
-
-Do not commit:
-
-API keys
-passwords
-authentication tokens
-private keys
-.env files
-local SQLite databases
-Python bytecode
-generated build artifacts
-local exported codebase snapshots
-
-Use .env.example for documenting required environment variables without storing real secrets.
-
-### Current Part 1 Implementation
-The current Part 1 implementation includes:
-
-Tactical cockpit
-Overview / Triage
-Incident Investigation
-Attack-path graph visualization
-Blast-radius visualization
-Metrics / Analytics
-Scenario replay
-Offline link-loss workflow
-Restore/replay workflow
-Demo-data clearing
-Live log ingestion
-SQLite persistence
-Deterministic investigation analysis
-Cross-site campaign correlation
-### Planned Part 2 Implementation
-Planned capabilities include:
-
-Ollama integration
-Local LLM investigation
-Evidence summarization
-Attack-chain explanation
-Context-aware investigation assistance
-Investigation report generation
-Analyst recommendations
-Natural-language incident interaction
-
-Part 2 will be developed after the Part 1 deterministic DFIR pipeline and visual workflow are stable.
+## 29. Future Part 2 AI Capabilities
+Part 2 will introduce an Ollama-powered local LLM to interpret the deterministic graphs. It will provide human-readable summaries, contextualize missing evidence, and suggest safe containment actions—all while preserving the strict privacy and local execution environment established in Part 1.

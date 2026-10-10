@@ -195,6 +195,8 @@ def correlate_campaign(session: Session, events: list[dict[str, Any]], scenario_
             "incident_id": None,
         }
 
+    events = list({e["event_id"]: e for e in events}.values())
+
     # ingest all events first (deterministic dedup)
     ingested = 0
     duplicates = 0

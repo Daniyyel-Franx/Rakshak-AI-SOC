@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{BACKEND_DIR / 'rakshak.db'}"
 
     # --- Ollama (local only) ---
+    enable_llm_analysis: bool = False   # Part 1 defaults to False (deterministic only)
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen2.5:7b-instruct"
     ollama_timeout_seconds: int = 60

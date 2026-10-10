@@ -272,7 +272,8 @@ def _layout(st: _GraphState) -> None:
         layer = LAYER.get(node["type"], 5)
         idx = per_layer.get(layer, 0)
         per_layer[layer] = idx + 1
-        node["position"] = {"x": float(layer * 220), "y": float(idx * 120)}
+        # Increase separation to avoid label collision
+        node["position"] = {"x": float(layer * 280), "y": float(idx * 150)}
 
 
 def ground_truth_counts(events: list[dict[str, Any]]) -> tuple[int, int]:

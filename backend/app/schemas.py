@@ -111,7 +111,7 @@ class BlastRadiusResponse(BaseModel):
     incident_id: str
     # Decision: if multiple target hosts are implicated, we compute for each
     # and return a list — callers can take the max or render a per-host overlay.
-    hosts: list[dict[str, Any]]  # [{host, score, contributing_nodes}]
+    hosts: list[dict[str, Any]]  # [{host, score, contributing_nodes, error}]
 
 
 # ----------------------------- Incidents -----------------------------

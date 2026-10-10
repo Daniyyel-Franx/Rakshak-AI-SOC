@@ -37,7 +37,7 @@ export function ResponseActions({ incidentId, target }: { incidentId: string | n
         incident_id: incidentId,
         action_type: pending.type,
         target: target || "synthetic-target",
-        approved_by: "soc-analyst",
+        approved_by: "dfir-analyst",
       })
       setResult(res)
     } finally {

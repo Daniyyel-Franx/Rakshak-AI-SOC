@@ -173,6 +173,8 @@ function BlastNode({ data }: NodeProps<BlastNodeData>) {
 }
 
 const nodeTypes = { blastNode: BlastNode }
+const FIT_VIEW_OPTIONS = { padding: 0.25 }
+const PRO_OPTIONS = { hideAttribution: true }
 
 // ─── Hull zone SVG overlay (rendered BEHIND React Flow nodes) ─────────────────
 /**
@@ -223,7 +225,7 @@ function HullZone({
         width: "100%",
         height: "100%",
         pointerEvents: "none",
-        zIndex: 1, // behind React Flow nodes (z-index 2+)
+        zIndex: 0, // behind React Flow nodes (z-index 3), same level as edges (z-index 0/1)
         overflow: "visible",
       }}
     >
@@ -259,7 +261,7 @@ function BlastGraphInner({
   canvasW: number
   canvasH: number
 }) {
-  const { host, contributing_nodes } = result
+  const { host, canonical_host, contributing_nodes, topology_edges } = result
   const rf = useReactFlow()
 
   const maxContrib = useMemo(
@@ -270,30 +272,32 @@ function BlastGraphInner({
     [contributing_nodes],
   )
 
+  const rootId = canonical_host || host
+
   // Build layout node list: compromised host + all contributing nodes
   const layoutNodes = useMemo(
     () => [
-      { id: `__host__${host}` },
+      { id: rootId },
       ...contributing_nodes.map((n) => ({ id: n.node })),
     ],
-    [host, contributing_nodes],
+    [rootId, contributing_nodes],
   )
 
-  // Edges: compromised host → each contributing node (directed trust path)
-  const layoutEdges = useMemo(
-    () =>
-      contributing_nodes.map((n) => ({
-        source: `__host__${host}`,
-        target: n.node,
-      })),
-    [host, contributing_nodes],
-  )
+  // Actual environmental topology edges from backend (never fabricated)
+  const layoutEdges = useMemo(() => {
+    if (topology_edges && topology_edges.length > 0) {
+      return topology_edges.map((e) => ({
+        source: e.source,
+        target: e.target,
+      }))
+    }
+    return []
+  }, [topology_edges])
 
   // Run force layout synchronously (stable positions, memoized)
   const positions = useMemo(
     () => runForceLayout(layoutNodes, layoutEdges, canvasW, canvasH),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [canvasW, canvasH, host, contributing_nodes.length],
+    [canvasW, canvasH, layoutNodes, layoutEdges],
   )
 
   const posMap = useMemo(
@@ -303,11 +307,10 @@ function BlastGraphInner({
 
   // Build React Flow nodes
   const rfNodes: Node<BlastNodeData>[] = useMemo(() => {
-    const hostId = `__host__${host}`
-    const hostPos = posMap.get(hostId) ?? { x: canvasW / 2, y: canvasH / 2 }
+    const hostPos = posMap.get(rootId) ?? { x: canvasW / 2, y: canvasH / 2 }
     const nodes: Node<BlastNodeData>[] = [
       {
-        id: hostId,
+        id: rootId,
         type: "blastNode",
         position: hostPos,
         draggable: false,
@@ -339,25 +342,38 @@ function BlastGraphInner({
       })
     }
     return nodes
-  }, [host, contributing_nodes, posMap, canvasW, canvasH, maxContrib])
+  }, [rootId, host, contributing_nodes, posMap, canvasW, canvasH, maxContrib])
 
-  // Build React Flow edges (smoothstep bezier curves)
+  // Build React Flow edges from actual environmental topology relationships
   const rfEdges: Edge[] = useMemo(() => {
-    const hostId = `__host__${host}`
-    return contributing_nodes.map((cn) => {
-      const ratio = cn.contribution / maxContrib
+    if (!topology_edges || topology_edges.length === 0) {
+      return []
+    }
+    return topology_edges.map((e, idx) => {
+      // Dynamic coloring based on contributing node impact
+      const cnSource = contributing_nodes.find((n) => n.node === e.source)
+      const cnTarget = contributing_nodes.find((n) => n.node === e.target)
+      const maxEdgeContrib = Math.max(cnSource?.contribution ?? 0, cnTarget?.contribution ?? 0)
+      const ratio = maxEdgeContrib / maxContrib
+
       const edgeColor =
         ratio >= 0.7
           ? "#a855f7"
           : ratio >= 0.35
             ? "#ffb020"
-            : "rgba(0,240,255,0.35)"
+            : "rgba(0,240,255,0.4)"
+
+      const label = e.trust_type ? e.trust_type.replace("_", " ") : undefined
+
       return {
-        id: `br-edge-${cn.node}`,
-        source: hostId,
-        target: cn.node,
+        id: `br-edge-${e.source}-${e.target}-${idx}`,
+        source: e.source,
+        target: e.target,
         type: "smoothstep",
         animated: ratio >= 0.7,
+        label,
+        labelStyle: { fill: "#849495", fontSize: 9, fontFamily: "var(--font-mono)" },
+        labelBgStyle: { fill: "rgba(12, 18, 34, 0.85)", rx: 3, ry: 3 },
         style: {
           stroke: edgeColor,
           strokeWidth: 1.2 + ratio * 1.2,
@@ -365,22 +381,35 @@ function BlastGraphInner({
         },
       }
     })
-  }, [host, contributing_nodes, maxContrib])
+  }, [topology_edges, contributing_nodes, maxContrib])
 
   const fitView = useCallback(() => {
     rf.fitView({ padding: 0.2, duration: 400 })
   }, [rf])
 
-  // Positions of contributing nodes for hull (exclude the compromised host itself
-  // so the hull wraps the "blast zone" around affected assets, not the source)
-  const hullPositions = useMemo(
-    () =>
-      contributing_nodes
-        .map((n) => posMap.get(n.node))
-        .filter((p): p is { x: number; y: number } => !!p)
-        .map((p, i) => ({ id: `hull-${i}`, x: p.x, y: p.y })),
-    [contributing_nodes, posMap],
-  )
+  // Hull zone should enclose ONLY the compromised host and the GENUINELY affected nodes (high/medium impact)
+  const hullPositions = useMemo(() => {
+    const impactThreshold = 0.35 // matches MED_GLOW / HIGH_GLOW ratio cutoff
+    const impactedNodes = contributing_nodes.filter((n) => {
+      const ratio = maxContrib > 0 ? n.contribution / maxContrib : 0
+      return ratio >= impactThreshold
+    })
+
+    const positions = impactedNodes
+      .map((n) => posMap.get(n.node))
+      .filter((p): p is { x: number; y: number } => !!p)
+      .map((p, i) => ({ id: `hull-cn-${i}`, x: p.x, y: p.y }))
+
+    // MUST include the compromised root host so the polygon anchors to the origin of the blast
+    const rootPos = posMap.get(rootId)
+    if (rootPos) {
+      positions.push({ id: "hull-root", x: rootPos.x, y: rootPos.y })
+    }
+
+    return positions
+  }, [contributing_nodes, posMap, maxContrib, rootId])
+
+  const memoNodeTypes = useMemo(() => nodeTypes, [])
 
   return (
     <div className="relative h-full w-full" style={{ zIndex: 2 }}>
@@ -390,13 +419,13 @@ function BlastGraphInner({
       <ReactFlow
         nodes={rfNodes}
         edges={rfEdges}
-        nodeTypes={nodeTypes}
+        nodeTypes={memoNodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.25 }}
+        fitViewOptions={FIT_VIEW_OPTIONS}
         minZoom={0.15}
         maxZoom={2}
-        proOptions={{ hideAttribution: true }}
-        style={{ background: "transparent" }}
+        proOptions={PRO_OPTIONS}
+        style={{ background: "transparent", zIndex: 1, position: "relative" }}
       >
         <Background
           variant={BackgroundVariant.Dots}
@@ -426,7 +455,7 @@ export function BlastRadiusNetworkView({ result, width = 800, height = 460 }: Pr
   if (result.contributing_nodes.length === 0) {
     return (
       <div
-        className="flex h-full min-h-[280px] items-center justify-center rounded-md border border-dashed"
+        className="flex h-full min-h-[280px] items-center justify-center rounded-md border border-dashed text-center"
         style={{
           borderColor: "rgba(0,240,255,0.15)",
           color: "rgba(185,202,203,0.4)",
@@ -434,7 +463,7 @@ export function BlastRadiusNetworkView({ result, width = 800, height = 460 }: Pr
           fontSize: "0.75rem",
         }}
       >
-        No reachable topology nodes from {result.host}
+        DATA INSUFFICIENT: <br /> {result.error || `No reachable topology nodes from ${result.host}`}
       </div>
     )
   }

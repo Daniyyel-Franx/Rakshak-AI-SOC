@@ -79,9 +79,13 @@ async def analyze(incident_id: str, session: Session = Depends(get_session)) -> 
     query = incident.title + " " + " ".join(t.get("id", "") for f in findings for t in (f.attack_techniques_json or []))
     knowledge = retrieval.retrieve(query, top_k=MAX_KNOWLEDGE)["results"]
 
-    # 2) try Ollama (bounded, validated). 3) fallback deterministic.
-    prompt = _build_prompt(incident, findings, knowledge)
-    parsed, status = await ollama_client.generate_json(prompt)
+    # 2) try Ollama only if Part 2 is enabled, otherwise use deterministic fallback
+    from ..config import settings
+    if settings.enable_llm_analysis:
+        prompt = _build_prompt(incident, findings, knowledge)
+        parsed, status = await ollama_client.generate_json(prompt)
+    else:
+        parsed, status = None, "disabled_in_part_1"
 
     result: dict
     if status == "ok" and parsed is not None:

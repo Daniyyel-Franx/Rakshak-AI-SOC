@@ -69,12 +69,24 @@ def get_blast_radius(
     for host in target_hosts:
         try:
             result = compute_blast_radius(host)
+            if len(result.get("contributing_nodes", [])) == 0:
+                result["error"] = "Target exists in topology but has no evidence-backed reachable nodes."
         except BlastRadiusError:
             # Host not in topology — return zero-score entry, not a 404
             result = {
                 "host": host,
                 "score": 0.0,
                 "contributing_nodes": [],
+                "topology_edges": [],
+                "error": "Target host is not mapped to the configured topology.",
+            }
+        except Exception as exc:
+            result = {
+                "host": host,
+                "score": 0.0,
+                "contributing_nodes": [],
+                "topology_edges": [],
+                "error": f"Blast-radius calculation failed at runtime: {exc}",
             }
         results.append(result)
 

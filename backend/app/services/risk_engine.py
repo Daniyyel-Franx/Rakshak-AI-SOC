@@ -13,7 +13,7 @@ from typing import Any
 
 from . import anomaly, feature_engine, graph_builder
 
-SEV_RANK = {"low": 1, "medium": 2, "high": 3, "critical": 4}
+SEV_RANK = {"informational": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
 
 
 def _stable_id(prefix: str, *parts: str) -> str:
@@ -224,11 +224,9 @@ def evaluate(events: list[dict[str, Any]], scenario_id: str = "") -> dict[str, A
 
 def _build_incident(events, findings, features, anomaly_score, graph_score,
                     scenario_id, site, authorized) -> dict[str, Any] | None:
-    if not findings and anomaly_score < 0.3:
-        # No incident for clearly benign activity.
-        if authorized:
-            return None
     max_sev = "low"
+    if not findings and authorized:
+        max_sev = "informational"
     for f in findings:
         if SEV_RANK.get(f["severity"], 1) > SEV_RANK.get(max_sev, 1):
             max_sev = f["severity"]
@@ -237,12 +235,9 @@ def _build_incident(events, findings, features, anomaly_score, graph_score,
     rule_boost = min(1.0, 0.2 * len(findings))
     # combined risk 0..100
     risk = (0.45 * anomaly_score + 0.20 * graph_score + 0.20 * deception + 0.15 * rule_boost) * 100
-    sev_floor = {"low": 15, "medium": 45, "high": 70, "critical": 85}
-    risk = max(risk, sev_floor.get(max_sev, 0) if findings else 0)
+    sev_floor = {"informational": 5, "low": 15, "medium": 45, "high": 70, "critical": 85}
+    risk = max(risk, sev_floor.get(max_sev, 0) if findings else 5.0)
     risk = round(min(100.0, risk), 1)
-
-    if not findings and risk < 25:
-        return None
 
     confidence = round(min(0.99, 0.4 + 0.1 * len(findings) + 0.2 * graph_score + 0.2 * deception), 2)
     entity_ids = sorted({n["id"] for n in graph_builder.build_graph(events)["nodes"]})

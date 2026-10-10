@@ -38,11 +38,11 @@ export function ConnectionStatus() {
         <span className="text-muted-foreground">DB</span>
       </div>
 
-      <div className="flex items-center gap-1.5" title="Local Ollama analyst model">
+      <div className="flex items-center gap-1.5" title="Local Ollama analyst model (Part 2)">
         <BrainCircuit className="h-3.5 w-3.5 text-muted-foreground" />
-        <Dot ok={ollamaOk} warn />
-        <span className="text-muted-foreground">Ollama</span>
-        <span className="text-foreground">{ollamaOk ? "ready" : "fallback"}</span>
+        <Dot ok={false} warn />
+        <span className="text-muted-foreground">LLM</span>
+        <span className="text-[var(--chart-2)]">PART 2 (DISABLED)</span>
       </div>
 
       <div className="flex items-center gap-1.5" title="Central streaming link">

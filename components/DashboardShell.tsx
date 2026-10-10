@@ -76,13 +76,62 @@ export function DashboardShell() {
   const [blastLoading, setBlastLoading] = useState(false)
   const [selectedHostIdx, setSelectedHostIdx] = useState(0)
 
-  // Auto-select the highest-risk incident once loaded
-  useEffect(() => {
-    if (!selectedIncident && incidents && incidents.length > 0) {
-      const top = [...incidents].sort((a, b) => b.risk_score - a.risk_score)[0]
-      setSelectedIncident(top.incident_id)
+  const sites = ["site-01", "site-02", "site-03"]
+
+  // Base list for site and search
+  const baseIncidents = useMemo(() => {
+    let list = incidents ?? []
+    if (site !== ALL_SITES) {
+      list = list.filter((i) => {
+        if (i.source === "live") return true
+        const mapped = SCENARIO_SITE_MAP[i.scenario_id] ?? ["site-01"]
+        return mapped.includes(site)
+      })
     }
-  }, [incidents, selectedIncident])
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter(
+        (i) => i.title.toLowerCase().includes(q) || i.incident_id.toLowerCase().includes(q),
+      )
+    }
+    return list
+  }, [incidents, site, searchQuery])
+
+  // Filtered incidents applies all filters
+  const filteredIncidents = useMemo(() => {
+    let list = baseIncidents
+    if (sourceFilter !== "ALL") {
+      list = list.filter((i) => {
+        if (sourceFilter === "LIVE") return i.source === "live"
+        if (sourceFilter === "DEMO") return i.source !== "live"
+        return true
+      })
+    }
+    if (sevFilter !== "ALL") {
+      list = list.filter((i) => {
+        const tone = riskTone(i.risk_score)
+        if (sevFilter === "CRITICAL") return tone === "critical"
+        if (sevFilter === "ELEVATED") return tone === "high" || tone === "medium"
+        if (sevFilter === "NOMINAL") return tone === "low"
+        return true
+      })
+    }
+    return list
+  }, [baseIncidents, sourceFilter, sevFilter])
+
+  // Auto-select or clear stale selection based on filtered results
+  useEffect(() => {
+    if (!incidents || !filteredIncidents) return
+    const currentIsValid = filteredIncidents.some((i) => i.incident_id === selectedIncident)
+    if (!currentIsValid) {
+      if (filteredIncidents.length > 0) {
+        const top = [...filteredIncidents].sort((a, b) => b.risk_score - a.risk_score)[0]
+        setSelectedIncident(top.incident_id)
+      } else {
+        setSelectedIncident(null)
+      }
+    }
+  }, [filteredIncidents, incidents, selectedIncident])
 
   // Fetch blast radius when switching to blast radius mode or selecting incident
   useEffect(() => {
@@ -107,30 +156,24 @@ export function DashboardShell() {
 
   const { data: incident } = useIncident(selectedIncident)
 
-  const sites = ["site-01", "site-02", "site-03"]
-
-  // Filtered incidents based on active site, search, severity, and source filters
-  const filteredIncidents = useMemo(() => {
-    let list = incidents ?? []
-    if (site !== ALL_SITES) {
-      list = list.filter((i) => {
-        const mapped = SCENARIO_SITE_MAP[i.scenario_id] ?? ["site-01"]
-        return mapped.includes(site)
-      })
-    }
+  // Counts for severity chips (uses base list + source filter, but NOT sev filter)
+  const sevCounts = useMemo(() => {
+    let list = baseIncidents
     if (sourceFilter !== "ALL") {
-      list = list.filter((i) => {
-        if (sourceFilter === "LIVE") return i.source === "live"
-        if (sourceFilter === "DEMO") return i.source !== "live"
-        return true
-      })
+      list = list.filter((i) => sourceFilter === "LIVE" ? i.source === "live" : i.source !== "live")
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase()
-      list = list.filter(
-        (i) => i.title.toLowerCase().includes(q) || i.incident_id.toLowerCase().includes(q),
-      )
-    }
+    const crit = list.filter((i) => riskTone(i.risk_score) === "critical").length
+    const elev = list.filter((i) => {
+      const t = riskTone(i.risk_score)
+      return t === "high" || t === "medium"
+    }).length
+    const nom = list.filter((i) => riskTone(i.risk_score) === "low").length
+    return { all: list.length, crit, elev, nom }
+  }, [baseIncidents, sourceFilter])
+
+  // Counts for source chips (uses base list + sev filter, but NOT source filter)
+  const sourceCounts = useMemo(() => {
+    let list = baseIncidents
     if (sevFilter !== "ALL") {
       list = list.filter((i) => {
         const tone = riskTone(i.risk_score)
@@ -140,28 +183,10 @@ export function DashboardShell() {
         return true
       })
     }
-    return list
-  }, [incidents, site, sourceFilter, searchQuery, sevFilter])
-
-  // Counts for severity chips
-  const sevCounts = useMemo(() => {
-    const list = incidents ?? []
-    const crit = list.filter((i) => riskTone(i.risk_score) === "critical").length
-    const elev = list.filter((i) => {
-      const t = riskTone(i.risk_score)
-      return t === "high" || t === "medium"
-    }).length
-    const nom = list.filter((i) => riskTone(i.risk_score) === "low").length
-    return { all: list.length, crit, elev, nom }
-  }, [incidents])
-
-  // Counts for source chips
-  const sourceCounts = useMemo(() => {
-    const list = incidents ?? []
     const live = list.filter((i) => i.source === "live").length
     const demo = list.filter((i) => i.source !== "live").length
     return { all: list.length, live, demo }
-  }, [incidents])
+  }, [baseIncidents, sevFilter])
 
   const activeTarget =
     (incident?.entity_ids ?? []).find((e) => e.startsWith("target_host:"))?.split(":")[1] ??
@@ -208,11 +233,11 @@ export function DashboardShell() {
                 </span>
                 <span className="font-mono text-[9px] text-muted-foreground">//</span>
                 <span className="font-mono text-[9px] font-semibold text-[#00e5a3] tracking-wider">
-                  LIVE SEC//OPS
+                  DFIR // ATTACK-CHAIN ANALYSIS
                 </span>
               </div>
               <p className="font-mono text-[9px] text-[#849495] tracking-tight">
-                MISSION-AWARE CYBER DEFENCE SOC
+                DETERMINISTIC ANALYSIS PLATFORM
               </p>
             </div>
           </div>
@@ -306,7 +331,7 @@ export function DashboardShell() {
           <div className="space-y-4">
             <div className="border-b border-[rgba(0,240,255,0.12)] pb-2">
               <span className="font-mono text-[9px] uppercase tracking-widest text-[#849495]">
-                TACTICAL COCKPIT
+                DFIR WORKSPACES
               </span>
             </div>
 
@@ -353,7 +378,7 @@ export function DashboardShell() {
                 active={false}
                 onClick={() => setIngestOpen(true)}
                 icon={<Upload className="h-3.5 w-3.5 text-[#00f0ff]" />}
-                label="Ingest Forensic Logs"
+                label="Forensic Log Ingestion"
                 badge={`${sourceCounts.live} LIVE`}
                 badgeTone="primary"
               />
@@ -534,8 +559,8 @@ export function DashboardShell() {
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#00f0ff]">
                           {graphMode === "attack-path"
-                            ? "COMPROMISE GRAPH // ATTACK PATHWAY"
-                            : "TOPOLOGY MATRIX // BLAST RADIUS CONTAINMENT"}
+                            ? "ATTACK-CHAIN RECONSTRUCTION"
+                            : "BLAST-RADIUS ASSESSMENT"}
                         </span>
                         {incident ? (
                           <span className="font-mono text-[10px] text-muted-foreground">
@@ -626,7 +651,7 @@ export function DashboardShell() {
                             </div>
                           ) : (
                             <div className="flex h-[400px] items-center justify-center font-mono text-xs text-muted-foreground">
-                              No blast radius data for this incident.
+                              DATA INSUFFICIENT: No target host identified in evidence graph.
                             </div>
                           )}
                         </>
@@ -657,7 +682,7 @@ export function DashboardShell() {
             </div>
           )}
 
-          {/* ─── Stitch Live Telemetry Mesh Footer Bar ─── */}
+          {/* ─── Local Pipeline Footer Bar ─── */}
           <footer
             className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-md px-4 py-3 font-mono text-[11px]"
             style={{
@@ -667,17 +692,17 @@ export function DashboardShell() {
             }}
           >
             <div className="flex items-center gap-2.5">
-              <span className="flex h-2 w-2 rounded-full bg-[#00e5a3] animate-pulse" />
-              <span className="font-bold text-[#e1e2ec]">LIVE HONEYPOT & SENSOR MESH</span>
-              <span className="text-[#849495] hidden md:inline">
-                // Global Telemetry Mesh active across 48 AWS/GCP regions and 32 on-prem datacenters <span className="text-[#ffb020] ml-2">[DECORATIVE]</span>
-              </span>
+               <span className="flex h-2 w-2 rounded-full bg-[#00e5a3] animate-pulse" />
+               <span className="font-bold text-[#e1e2ec]">LOCAL FORENSIC TELEMETRY PIPELINE</span>
+               <span className="text-[#849495] hidden md:inline">
+                 // PART 1
+               </span>
             </div>
 
             <div className="flex items-center gap-4 text-[#849495] flex-wrap">
-              <span>PROVENANCE: <strong className="text-[#00e5a3]">LIVE ({metrics?.provenance_breakdown?.events?.live ?? 0}) / DEMO ({metrics?.provenance_breakdown?.events?.demo ?? 0})</strong></span>
-              <span>SIEM INGEST: <strong className="text-[#00e5a3]">SYNCHRONIZED</strong></span>
-              <span>SOAR QUEUE: <strong className="text-[#ffb020]">RUNNING</strong></span>
+              <span>TELEMETRY PROVENANCE: <strong className="text-[#00e5a3]">LIVE ({metrics?.provenance_breakdown?.events?.live ?? 0}) / DEMO ({metrics?.provenance_breakdown?.events?.demo ?? 0})</strong></span>
+              <span>DETERMINISTIC ANALYSIS: <strong className="text-[#00e5a3]">ACTIVE</strong></span>
+              <span>LLM: <strong className="text-[#ffb020]">PART 2 (DISABLED)</strong></span>
             </div>
           </footer>
         </main>

@@ -212,10 +212,19 @@ export const blastRadiusContributingNodeSchema = z.object({
   contribution: z.number(),
 })
 
+export const blastRadiusTopologyEdgeSchema = z.object({
+  source: z.string(),
+  target: z.string(),
+  trust_type: z.string().optional(),
+})
+
 export const blastRadiusHostSchema = z.object({
   host: z.string(),
+  canonical_host: z.string().optional(),
   score: z.number(),
   contributing_nodes: z.array(blastRadiusContributingNodeSchema),
+  topology_edges: z.array(blastRadiusTopologyEdgeSchema).optional(),
+  error: z.string().optional(),
 })
 
 export const blastRadiusSchema = z.object({

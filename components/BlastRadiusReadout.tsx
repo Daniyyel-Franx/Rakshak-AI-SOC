@@ -62,15 +62,20 @@ export function BlastRadiusReadout({ result }: Props) {
             BLAST RADIUS
           </p>
           <p
-            className="mt-0.5 truncate max-w-[180px]"
+            className="mt-0.5 truncate max-w-[200px]"
             style={{
               fontFamily: "JetBrains Mono, monospace",
               fontSize: "0.75rem",
               color: "#00dbe9",
             }}
-            title={host}
+            title={result.canonical_host && result.canonical_host !== host ? `${host} -> ${result.canonical_host}` : host}
           >
             {host}
+            {result.canonical_host && result.canonical_host !== host && (
+              <span className="text-[10px] text-muted-foreground ml-1.5 font-normal">
+                ({result.canonical_host})
+              </span>
+            )}
           </p>
         </div>
         <span
@@ -90,6 +95,14 @@ export function BlastRadiusReadout({ result }: Props) {
           [ {riskLevel} ]
         </span>
       </div>
+
+      {result.error && (
+        <div className="rounded border border-[rgba(255,176,32,0.3)] bg-[rgba(255,176,32,0.06)] p-2">
+          <p className="font-mono text-[10px] text-[#ffb020] leading-tight">
+            {result.error}
+          </p>
+        </div>
+      )}
 
       {/* Large score display */}
       <div className="flex items-baseline gap-1.5">

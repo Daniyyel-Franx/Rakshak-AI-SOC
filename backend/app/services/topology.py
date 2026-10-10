@@ -17,6 +17,7 @@ Hostnames reuse demo scenario names for narrative consistency.
 from __future__ import annotations
 
 from functools import lru_cache
+import ipaddress
 
 import networkx as nx
 
@@ -91,3 +92,57 @@ def get_topology_graph() -> nx.Graph:
         G.add_edge(src, dst, trust_type=trust_type)
 
     return G
+
+
+# ---------------------------------------------------------------------------
+# Deliberate alias mapping for synthetic sample-log telemetry:
+# - target-linux-01: Linux auditd sample logs (auditd_execve, auditd_file) simulate command execution
+#   and credential access on the primary Linux target host (canonical: target-web-01).
+# - edge-fw-01: OpenSSH syslog sample log (ssh_auth) simulates boundary perimeter SSH brute force
+#   targeting the edge gateway node (canonical: edge-node-03).
+# - perimeter-gw: Zeek conn.log sample log (zeek_conn) simulates outbound TLS C2 beacon
+#   from the perimeter gateway node (canonical: edge-node-03).
+# These mappings are strictly scoped to these documented sample-log fixtures and must not
+# be generalized to unrelated assets.
+# ---------------------------------------------------------------------------
+HOST_ALIASES: dict[str, str] = {
+    "target-linux-01": "target-web-01",
+    "target-linux": "target-web-01",
+    "edge-fw-01": "edge-node-03",
+    "edge-fw": "edge-node-03",
+    "perimeter-gw": "edge-node-03",
+}
+
+
+def canonicalize_host(host: str) -> str:
+    """Normalize hostname and resolve known asset aliases.
+
+    1. Preserves valid IPv4 and IPv6 addresses without modifying or stripping.
+    2. Resolves deliberate aliases for synthetic sample-log fixtures.
+    3. Handles case-insensitivity and strips DNS domain suffixes (e.g. host.corp.local -> host).
+    4. Unmapped hostnames are preserved in normalized lowercase form.
+    """
+    if not host:
+        return ""
+    h = host.strip()
+
+    # 1. Preserve valid IPv4 or IPv6 addresses directly
+    try:
+        ipaddress.ip_address(h)
+        return h
+    except ValueError:
+        pass
+
+    # 2. Check full string in known aliases (case-insensitive)
+    h_lower = h.lower()
+    if h_lower in HOST_ALIASES:
+        return HOST_ALIASES[h_lower]
+
+    # 3. Strip DNS domain suffixes if present (e.g., target-web-01.corp.local -> target-web-01)
+    parts = h_lower.split(".")
+    h_short = parts[0]
+    if h_short in HOST_ALIASES:
+        return HOST_ALIASES[h_short]
+
+    # Return stripped shortname if FQDN was provided, else normalized lower
+    return h_short if len(parts) > 1 else h_lower
